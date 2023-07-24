@@ -94,6 +94,9 @@ MultiFrameCodec::State::GetNextFrameImage(
       // Copy the previous frame's output buffer into the current frame as the
       // starting point.
       bitmap.writePixels(lastRequiredFrame_->pixmap());
+      if (restoreBGColorRect_.has_value()) {
+        bitmap.erase(SK_ColorTRANSPARENT, restoreBGColorRect_.value());
+      }
     }
   }
 
@@ -133,13 +136,21 @@ MultiFrameCodec::State::GetNextFrameImage(
     lastRequiredFrameIndex_ = nextFrameIndex_;
   }
 
+  if (frameInfo.disposal_method ==
+      SkCodecAnimation::DisposalMethod::kRestoreBGColor) {
+    restoreBGColorRect_ = frameInfo.disposal_rect;
+  } else {
+    restoreBGColorRect_.reset();
+  }
+
 #if IMPELLER_SUPPORTS_RENDERING
   if (is_impeller_enabled_) {
     // This is safe regardless of whether the GPU is available or not because
     // without mipmap creation there is no command buffer encoding done.
-    return ImageDecoderImpeller::UploadTextureToShared(
+    return ImageDecoderImpeller::UploadTextureToStorage(
         impeller_context, std::make_shared<SkBitmap>(bitmap),
         std::make_shared<fml::SyncSwitch>(),
+        impeller::StorageMode::kHostVisible,
         /*create_mips=*/false);
   }
 #endif  // IMPELLER_SUPPORTS_RENDERING

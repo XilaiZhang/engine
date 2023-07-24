@@ -76,6 +76,16 @@ class StandardCapabilities final : public Capabilities {
     return default_stencil_format_;
   }
 
+  // |Capabilities|
+  bool SupportsMemorylessTextures() const override {
+    return supports_memoryless_textures_;
+  }
+
+  // |Capabilities|
+  bool SupportsPipelinesWithNoColorAttachments() const override {
+    return supports_pipelines_with_no_color_attachments_;
+  }
+
  private:
   StandardCapabilities(bool has_threading_restrictions,
                        bool supports_offscreen_msaa,
@@ -88,6 +98,8 @@ class StandardCapabilities final : public Capabilities {
                        bool supports_read_from_onscreen_texture,
                        bool supports_read_from_resolve,
                        bool supports_decal_tile_mode,
+                       bool supports_memoryless_textures,
+                       bool supports_pipelines_with_no_color_attachments,
                        PixelFormat default_color_format,
                        PixelFormat default_stencil_format)
       : has_threading_restrictions_(has_threading_restrictions),
@@ -102,6 +114,9 @@ class StandardCapabilities final : public Capabilities {
             supports_read_from_onscreen_texture),
         supports_read_from_resolve_(supports_read_from_resolve),
         supports_decal_tile_mode_(supports_decal_tile_mode),
+        supports_memoryless_textures_(supports_memoryless_textures),
+        supports_pipelines_with_no_color_attachments_(
+            supports_pipelines_with_no_color_attachments),
         default_color_format_(default_color_format),
         default_stencil_format_(default_stencil_format) {}
 
@@ -118,6 +133,8 @@ class StandardCapabilities final : public Capabilities {
   bool supports_read_from_onscreen_texture_ = false;
   bool supports_read_from_resolve_ = false;
   bool supports_decal_tile_mode_ = false;
+  bool supports_memoryless_textures_ = false;
+  bool supports_pipelines_with_no_color_attachments_ = false;
   PixelFormat default_color_format_ = PixelFormat::kUnknown;
   PixelFormat default_stencil_format_ = PixelFormat::kUnknown;
 
@@ -202,6 +219,18 @@ CapabilitiesBuilder& CapabilitiesBuilder::SetSupportsDecalTileMode(bool value) {
   return *this;
 }
 
+CapabilitiesBuilder& CapabilitiesBuilder::SetSupportsMemorylessTextures(
+    bool value) {
+  supports_memoryless_textures_ = value;
+  return *this;
+}
+
+CapabilitiesBuilder&
+CapabilitiesBuilder::SetSupportsPipelinesWithNoColorAttachments(bool value) {
+  supports_pipelines_with_no_color_attachments_ = value;
+  return *this;
+}
+
 std::unique_ptr<Capabilities> CapabilitiesBuilder::Build() {
   return std::unique_ptr<StandardCapabilities>(new StandardCapabilities(  //
       has_threading_restrictions_,                                        //
@@ -215,6 +244,8 @@ std::unique_ptr<Capabilities> CapabilitiesBuilder::Build() {
       supports_read_from_onscreen_texture_,                               //
       supports_read_from_resolve_,                                        //
       supports_decal_tile_mode_,                                          //
+      supports_memoryless_textures_,                                      //
+      supports_pipelines_with_no_color_attachments_,                      //
       default_color_format_.value_or(PixelFormat::kUnknown),              //
       default_stencil_format_.value_or(PixelFormat::kUnknown)             //
       ));
