@@ -17,11 +17,8 @@
 #include "impeller/renderer/backend/vulkan/queue_vk.h"
 #include "impeller/renderer/backend/vulkan/sampler_library_vk.h"
 #include "impeller/renderer/backend/vulkan/shader_library_vk.h"
-#include "impeller/renderer/backend/vulkan/swapchain_vk.h"
-#include "impeller/renderer/backend/vulkan/vk.h"
 #include "impeller/renderer/capabilities.h"
 #include "impeller/renderer/context.h"
-#include "impeller/renderer/surface.h"
 
 namespace impeller {
 
@@ -85,6 +82,11 @@ class ContextVK final : public Context,
 
   // |Context|
   void Shutdown() override;
+
+  // |Context|
+  void SetSyncPresentation(bool value) override { sync_presentation_ = value; }
+
+  bool GetSyncPresentation() const { return sync_presentation_; }
 
   void SetOffscreenFormat(PixelFormat pixel_format);
 
@@ -164,6 +166,7 @@ class ContextVK final : public Context,
   std::shared_ptr<ResourceManagerVK> resource_manager_;
   std::string device_name_;
   std::shared_ptr<fml::ConcurrentMessageLoop> raster_message_loop_;
+  bool sync_presentation_ = false;
   const uint64_t hash_;
 
   bool is_valid_ = false;

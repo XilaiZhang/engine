@@ -1,4 +1,4 @@
-Signature: fab4003f3c5d0b0db994dfe71b5d9e89
+Signature: 9a31319fc49dcb0a9eed7caba8bc94aa
 
 ====================================================================================================
 LIBRARY: fuchsia_sdk
@@ -874,7 +874,6 @@ ORIGIN: ../../../fuchsia/sdk/linux/pkg/media_cpp_no_converters/include/lib/media
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/media_cpp_no_converters/timeline_function.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/media_cpp_no_converters/timeline_rate.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/completion.h + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/termination_reason.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/zx/channel.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/zx/event.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/zx/eventpair.cc + ../../../fuchsia/sdk/linux/LICENSE
@@ -979,7 +978,6 @@ FILE: ../../../fuchsia/sdk/linux/pkg/media_cpp_no_converters/include/lib/media/c
 FILE: ../../../fuchsia/sdk/linux/pkg/media_cpp_no_converters/timeline_function.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/media_cpp_no_converters/timeline_rate.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/completion.h
-FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/termination_reason.h
 FILE: ../../../fuchsia/sdk/linux/pkg/zx/channel.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/zx/event.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/zx/eventpair.cc
@@ -1504,11 +1502,6 @@ ORIGIN: ../../../fuchsia/sdk/linux/pkg/svc/include/lib/svc/dir.h + ../../../fuch
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/condition.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/internal/condition-template.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/mutex.h + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/enclosing_environment.cc + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/fake_component.cc + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/fake_launcher.cc + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/launcher_impl.cc + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/test_with_environment.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/syslog/include/lib/syslog/global.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/syslog/include/lib/syslog/logger.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/syslog/include/lib/syslog/wire_format.h + ../../../fuchsia/sdk/linux/LICENSE
@@ -1723,11 +1716,6 @@ FILE: ../../../fuchsia/sdk/linux/pkg/svc/include/lib/svc/dir.h
 FILE: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/condition.h
 FILE: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/internal/condition-template.h
 FILE: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/mutex.h
-FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/enclosing_environment.cc
-FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/fake_component.cc
-FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/fake_launcher.cc
-FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/launcher_impl.cc
-FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/test_with_environment.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/syslog/include/lib/syslog/global.h
 FILE: ../../../fuchsia/sdk/linux/pkg/syslog/include/lib/syslog/logger.h
 FILE: ../../../fuchsia/sdk/linux/pkg/syslog/include/lib/syslog/wire_format.h
@@ -2646,14 +2634,11 @@ ORIGIN: ../../../fuchsia/sdk/linux/pkg/stdcompat/include/lib/stdcompat/string_vi
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/stdcompat/include/lib/stdcompat/utility.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/internal/mutex-internal.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/component_context.cc + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/file_descriptor.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/component_context.h + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/file_descriptor.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/outgoing_directory.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/service_directory.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/outgoing_directory.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/service_directory.cc + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp/termination_reason.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/component_context_provider.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/service_directory_provider.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_inspect_cpp/component.cc + ../../../fuchsia/sdk/linux/LICENSE
@@ -2947,14 +2932,11 @@ FILE: ../../../fuchsia/sdk/linux/pkg/stdcompat/include/lib/stdcompat/string_view
 FILE: ../../../fuchsia/sdk/linux/pkg/stdcompat/include/lib/stdcompat/utility.h
 FILE: ../../../fuchsia/sdk/linux/pkg/sync/include/lib/sync/internal/mutex-internal.h
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/component_context.cc
-FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/file_descriptor.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/component_context.h
-FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/file_descriptor.h
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/outgoing_directory.h
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/include/lib/sys/cpp/service_directory.h
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/outgoing_directory.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/service_directory.cc
-FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp/termination_reason.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/component_context_provider.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_cpp_testing/service_directory_provider.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_inspect_cpp/component.cc
@@ -3547,7 +3529,7 @@ ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_component_cpp_testing/internal/realm.
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_component_cpp_testing/realm_builder.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_component_cpp_testing/realm_builder_types.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_component_cpp_testing/scoped_child.cc + ../../../fuchsia/sdk/linux/LICENSE
-ORIGIN: ../../../fuchsia/sdk/linux/pkg/syslog_structured_backend/fuchsia_syslog.cc + ../../../fuchsia/sdk/linux/LICENSE
+ORIGIN: ../../../fuchsia/sdk/linux/pkg/syslog_structured_backend/cpp/fuchsia_syslog.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/syslog_structured_backend/include/lib/syslog/structured_backend/cpp/fuchsia_syslog.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/syslog_structured_backend/include/lib/syslog/structured_backend/fuchsia_syslog.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/zx/status_string.cc + ../../../fuchsia/sdk/linux/LICENSE
@@ -3695,7 +3677,7 @@ FILE: ../../../fuchsia/sdk/linux/pkg/sys_component_cpp_testing/internal/realm.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_component_cpp_testing/realm_builder.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_component_cpp_testing/realm_builder_types.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_component_cpp_testing/scoped_child.cc
-FILE: ../../../fuchsia/sdk/linux/pkg/syslog_structured_backend/fuchsia_syslog.cc
+FILE: ../../../fuchsia/sdk/linux/pkg/syslog_structured_backend/cpp/fuchsia_syslog.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/syslog_structured_backend/include/lib/syslog/structured_backend/cpp/fuchsia_syslog.h
 FILE: ../../../fuchsia/sdk/linux/pkg/syslog_structured_backend/include/lib/syslog/structured_backend/fuchsia_syslog.h
 FILE: ../../../fuchsia/sdk/linux/pkg/zx/status_string.cc
@@ -4268,6 +4250,7 @@ ORIGIN: ../../../fuchsia/sdk/linux/fidl/fuchsia.io/symlink.fidl + ../../../fuchs
 ORIGIN: ../../../fuchsia/sdk/linux/fidl/fuchsia.lowpan.thread/feature.fidl + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/fidl/fuchsia.net.routes/ipv4.fidl + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/fidl/fuchsia.net.routes/ipv6.fidl + ../../../fuchsia/sdk/linux/LICENSE
+ORIGIN: ../../../fuchsia/sdk/linux/fidl/fuchsia.net.stackmigrationdeprecated/stackmigrationdeprecated.fidl + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/fidl/fuchsia.session/lifecycle.fidl + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/fidl/fuchsia.session/overview.fidl + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/fidl/fuchsia.session/restarter.fidl + ../../../fuchsia/sdk/linux/LICENSE
@@ -4302,6 +4285,7 @@ ORIGIN: ../../../fuchsia/sdk/linux/pkg/driver_testing_cpp/environment_variables.
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/driver_testing_cpp/test_environment.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/driver_testing_cpp/test_node.cc + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/inspect/offer.shard.cml + ../../../fuchsia/sdk/linux/LICENSE
+ORIGIN: ../../../fuchsia/sdk/linux/pkg/inspect/use.shard.cml + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sync_cpp/include/lib/sync/cpp/mutex.h + ../../../fuchsia/sdk/linux/LICENSE
 ORIGIN: ../../../fuchsia/sdk/linux/pkg/sys_service_cpp/service_handler.cc + ../../../fuchsia/sdk/linux/LICENSE
 TYPE: LicenseType.bsd
@@ -4323,6 +4307,7 @@ FILE: ../../../fuchsia/sdk/linux/fidl/fuchsia.io/symlink.fidl
 FILE: ../../../fuchsia/sdk/linux/fidl/fuchsia.lowpan.thread/feature.fidl
 FILE: ../../../fuchsia/sdk/linux/fidl/fuchsia.net.routes/ipv4.fidl
 FILE: ../../../fuchsia/sdk/linux/fidl/fuchsia.net.routes/ipv6.fidl
+FILE: ../../../fuchsia/sdk/linux/fidl/fuchsia.net.stackmigrationdeprecated/stackmigrationdeprecated.fidl
 FILE: ../../../fuchsia/sdk/linux/fidl/fuchsia.session/lifecycle.fidl
 FILE: ../../../fuchsia/sdk/linux/fidl/fuchsia.session/overview.fidl
 FILE: ../../../fuchsia/sdk/linux/fidl/fuchsia.session/restarter.fidl
@@ -4357,6 +4342,7 @@ FILE: ../../../fuchsia/sdk/linux/pkg/driver_testing_cpp/environment_variables.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/driver_testing_cpp/test_environment.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/driver_testing_cpp/test_node.cc
 FILE: ../../../fuchsia/sdk/linux/pkg/inspect/offer.shard.cml
+FILE: ../../../fuchsia/sdk/linux/pkg/inspect/use.shard.cml
 FILE: ../../../fuchsia/sdk/linux/pkg/sync_cpp/include/lib/sync/cpp/mutex.h
 FILE: ../../../fuchsia/sdk/linux/pkg/sys_service_cpp/service_handler.cc
 ----------------------------------------------------------------------------------------------------
