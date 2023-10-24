@@ -1,0 +1,45 @@
+on: workflow_dispatch
+
+# on:
+#   schedule:
+#      # every 5 minutes
+#     - cron:  '*/5 * * * *'
+
+# Adpat from https://stackoverflow.com/questions/23793062/can-forks-be-synced-automatically-in-github.
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout flutter/flutter Repo
+        uses: actions/checkout@v4
+        with:
+          ref: beta
+          repository: flutter/flutter
+          token: ${{ github.token }}
+      - name: Read Beta Candidate Name
+        id: version
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./bin/internal/release-candidate-branch.version
+      - name: Set Beta Branch
+        run: |
+          echo "BETA_BRANCH=${{ steps.version.outputs.content }}" >> $GITHUB_ENV
+      - name: Trim Ending newline
+        run: |
+          echo "BETA_BRANCH=$(echo $BETA_BRANCH | tr -d '\n')" >> $GITHUB_ENV
+      - name: Merge upstream
+        uses: actions/checkout@v2
+      - name: Sync Beta Branch
+        run: |
+          git config --global user.name 'XilaiZhang'
+          git config --global user.email 'XilaiZhang@users.noreply.github.com'
+
+          # "git checkout master" is unnecessary, already here by default
+          git pull --unshallow
+
+          git remote add upstream https://github.com/flutter/engine.git
+          git fetch upstream
+
+          git checkout -b ${BETA_BRANCH} origin/${BETA_BRANCH}
+          git merge --no-edit upstream/${BETA_BRANCH}
+          git push origin ${BETA_BRANCH}
