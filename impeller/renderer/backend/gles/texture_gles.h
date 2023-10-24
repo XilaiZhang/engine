@@ -17,8 +17,8 @@ class TextureGLES final : public Texture,
  public:
   enum class Type {
     kTexture,
+    kTextureMultisampled,
     kRenderBuffer,
-    kRenderBufferMultisampled,
   };
 
   enum class IsWrapped {
@@ -46,7 +46,6 @@ class TextureGLES final : public Texture,
     kStencil,
   };
   [[nodiscard]] bool SetAsFramebufferAttachment(GLenum target,
-                                                GLuint fbo,
                                                 AttachmentPoint point) const;
 
   Type GetType() const;

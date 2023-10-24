@@ -175,6 +175,7 @@ struct GLProc {
   PROC(StencilOpSeparate);                   \
   PROC(TexImage2D);                          \
   PROC(TexParameteri);                       \
+  PROC(TexParameterfv);                      \
   PROC(Uniform1fv);                          \
   PROC(Uniform1i);                           \
   PROC(Uniform2fv);                          \
@@ -195,7 +196,13 @@ struct GLProc {
   PROC(PushDebugGroupKHR);                 \
   PROC(PopDebugGroupKHR);                  \
   PROC(ObjectLabelKHR);                    \
-  PROC(RenderbufferStorageMultisampleEXT);
+  PROC(RenderbufferStorageMultisampleEXT); \
+  PROC(GenQueriesEXT);                     \
+  PROC(DeleteQueriesEXT);                  \
+  PROC(GetQueryObjectui64vEXT);            \
+  PROC(BeginQueryEXT);                     \
+  PROC(EndQueryEXT);                       \
+  PROC(GetQueryObjectuivEXT);
 
 enum class DebugResourceType {
   kTexture,

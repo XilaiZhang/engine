@@ -1695,6 +1695,11 @@ bool Shell::OnServiceProtocolScreenshotSKP(
     const ServiceProtocol::Handler::ServiceProtocolMap& params,
     rapidjson::Document* response) {
   FML_DCHECK(task_runners_.GetRasterTaskRunner()->RunsTasksOnCurrentThread());
+  if (settings_.enable_impeller) {
+    ServiceProtocolFailureError(
+        response, "Cannot capture SKP screenshot with Impeller enabled.");
+    return false;
+  }
   auto screenshot = rasterizer_->ScreenshotLastLayerTree(
       Rasterizer::ScreenshotType::SkiaPicture, true);
   if (screenshot.data) {
@@ -1966,6 +1971,13 @@ bool Shell::OnServiceProtocolRenderFrameWithRasterStats(
     const ServiceProtocol::Handler::ServiceProtocolMap& params,
     rapidjson::Document* response) {
   FML_DCHECK(task_runners_.GetRasterTaskRunner()->RunsTasksOnCurrentThread());
+
+  // Impeller does not support this protocol method.
+  if (io_manager_->GetImpellerContext()) {
+    const char* error = "Raster status not supported on Impeller backend.";
+    ServiceProtocolFailureError(response, error);
+    return false;
+  }
 
   // TODO(dkwingsmt): This method only handles view #0, including the snapshot
   // and the frame size. We need to adapt this method to multi-view.
