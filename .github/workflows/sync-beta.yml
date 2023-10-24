@@ -26,7 +26,7 @@ jobs:
         run: |
           echo "BETA_BRANCH=$(echo $BETA_BRANCH | tr -d '\n')" >> $GITHUB_ENV
       - name: Merge upstream
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Sync Beta Branch
         run: |
           git config --global user.name 'XilaiZhang'
