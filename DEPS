@@ -18,7 +18,7 @@ vars = {
   'llvm_git': 'https://llvm.googlesource.com',
   # OCMock is for testing only so there is no google clone
   'ocmock_git': 'https://github.com/erikdoe/ocmock.git',
-  'skia_revision': '502277be15cf43581797de922df9e7e0cdb9239f',
+  'skia_revision': '93a0ad4d7ca62b6ee34c8fed6d8253c71f8ba9de',
 
   # WARNING: DO NOT EDIT canvaskit_cipd_instance MANUALLY
   # See `lib/web_ui/README.md` for how to roll CanvasKit to a new version.
@@ -268,7 +268,7 @@ deps = {
    Var('fuchsia_git') + '/third_party/rapidjson' + '@' + 'ef3564c5c8824989393b87df25355baf35ff544b',
 
   'src/third_party/harfbuzz':
-   Var('flutter_git') + '/third_party/harfbuzz' + '@' + '5f0431572e143056410fbf6b8865be5a78befbdc',
+   Var('flutter_git') + '/third_party/harfbuzz' + '@' + 'b61761f36e93c3f1e36c9bed0755acfa7f4e3d4f',
 
   'src/third_party/libcxx':
    Var('llvm_git') + '/llvm-project/libcxx' + '@' + '44079a4cc04cdeffb9cfe8067bfb3c276fb2bab0',
@@ -370,7 +370,7 @@ deps = {
    Var('dart_git') + '/dart_style.git@1a2def95a3c04dafd27b85d17e6e828bd4afa1a3',
 
   'src/third_party/dart/third_party/pkg/dartdoc':
-   Var('dart_git') + '/dartdoc.git@f7e9b17897e69dd5e43d3f0a785bb5b6e5c973ed',
+   Var('dart_git') + '/dartdoc.git@53da3e1dd1802c5899352fce251ea0c385a827b0',
 
   'src/third_party/dart/third_party/pkg/ffi':
    Var('dart_git') + '/ffi.git@2faec288966d8f564049adb86a7ca43fd6e01fbf',
@@ -412,7 +412,7 @@ deps = {
    Var('dart_git') + '/markdown.git@4e2e9701d87058311857d06fd7f5df54e8f86c53',
 
   'src/third_party/dart/third_party/pkg/matcher':
-   Var('dart_git') + '/matcher.git@356e5f68d3484d44b9ef3b814ed95f9de17c7afd',
+   Var('dart_git') + '/matcher.git@7512f8056486f6b0855ec9307ce0f93902c329e7',
 
   'src/third_party/dart/third_party/pkg/mime':
    Var('dart_git') + '/mime.git@af3e5fe753b957e95f03838f8a63782582c413ca',
@@ -644,9 +644,6 @@ deps = {
   'src/third_party/pkg/equatable':
   Var('github_git') + '/felangel/equatable.git' + '@' + '0ba67c72db8bed75877fc1caafa74112ee0bd921', # 2.0.2
 
-  'src/third_party/pkg/file':
-  Var('dart_git') + '/external/github.com/google/file.dart.git' + '@' + 'b2e31cb6ef40b223701dbfa0b907fe58468484d7', # 6.1.4
-
   'src/third_party/pkg/flutter_packages':
   Var('flutter_git') + '/mirrors/packages' + '@' + '25454e63851fe7933f04d025606e68c1eac4fe0f', # various
 
@@ -664,9 +661,6 @@ deps = {
 
   'src/third_party/pkg/process_runner':
   Var('github_git') + '/google/process_runner.git' + '@' + 'f24c69efdcaf109168f23d381fa281453d2bc9b1', # 4.1.2
-
-  'src/third_party/pkg/quiver':
-  Var('chromium_git') + '/external/github.com/google/quiver-dart' + '@' + '90b92bee895e507d435012356a8b5c5f17eafa52', # 3.2.1
 
   'src/third_party/pkg/vector_math':
   Var('dart_git') + '/external/github.com/google/vector_math.dart.git' + '@' + '0a5fd95449083d404df9768bc1b321b88a7d2eef', # 2.1.0
@@ -912,7 +906,7 @@ deps = {
      'packages': [
        {
         'package': 'fuchsia/sdk/core/mac-amd64',
-        'version': 'YqSO1OByhoexFJSCrIkAG8x9jbNXS_7gjuN_KRkqYJ8C'
+        'version': 'YSn00b0Trsu2vdhIquW18LtloBiuM7KfAGD87Qia3cAC'
        }
      ],
      'condition': 'host_os == "mac" and not download_fuchsia_sdk',
@@ -922,7 +916,7 @@ deps = {
      'packages': [
        {
         'package': 'fuchsia/sdk/core/linux-amd64',
-        'version': 'tqukMrdJ6j-845-57ZXwEj2Nj4CsYsjIqZqD2wOqYT8C'
+        'version': '37VxdxlPfdkek7mwC3heFMrRbD7iBgtkAEPGjmnsyisC'
        }
      ],
      'condition': 'host_os == "linux" and not download_fuchsia_sdk',

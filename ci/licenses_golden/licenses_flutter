@@ -1837,10 +1837,10 @@ ORIGIN: ../../../flutter/impeller/entity/contents/filters/color_filter_contents.
 ORIGIN: ../../../flutter/impeller/entity/contents/filters/color_filter_contents.h + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/entity/contents/filters/color_matrix_filter_contents.cc + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/entity/contents/filters/color_matrix_filter_contents.h + ../../../flutter/LICENSE
+ORIGIN: ../../../flutter/impeller/entity/contents/filters/directional_gaussian_blur_filter_contents.cc + ../../../flutter/LICENSE
+ORIGIN: ../../../flutter/impeller/entity/contents/filters/directional_gaussian_blur_filter_contents.h + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/entity/contents/filters/filter_contents.cc + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/entity/contents/filters/filter_contents.h + ../../../flutter/LICENSE
-ORIGIN: ../../../flutter/impeller/entity/contents/filters/gaussian_blur_filter_contents.cc + ../../../flutter/LICENSE
-ORIGIN: ../../../flutter/impeller/entity/contents/filters/gaussian_blur_filter_contents.h + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/entity/contents/filters/inputs/contents_filter_input.cc + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/entity/contents/filters/inputs/contents_filter_input.h + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/entity/contents/filters/inputs/filter_contents_filter_input.cc + ../../../flutter/LICENSE
@@ -2333,6 +2333,11 @@ ORIGIN: ../../../flutter/impeller/scene/shaders/unlit.frag + ../../../flutter/LI
 ORIGIN: ../../../flutter/impeller/scene/shaders/unskinned.vert + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/scene/skin.cc + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/scene/skin.h + ../../../flutter/LICENSE
+ORIGIN: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive.cc + ../../../flutter/LICENSE
+ORIGIN: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive.fbs + ../../../flutter/LICENSE
+ORIGIN: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive.h + ../../../flutter/LICENSE
+ORIGIN: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive_writer.cc + ../../../flutter/LICENSE
+ORIGIN: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive_writer.h + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/shader_archive/shader_archive.cc + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/shader_archive/shader_archive.fbs + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/impeller/shader_archive/shader_archive.h + ../../../flutter/LICENSE
@@ -3922,6 +3927,7 @@ ORIGIN: ../../../flutter/shell/platform/windows/flutter_windows_texture_registra
 ORIGIN: ../../../flutter/shell/platform/windows/flutter_windows_texture_registrar.h + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/shell/platform/windows/flutter_windows_view.cc + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/shell/platform/windows/flutter_windows_view.h + ../../../flutter/LICENSE
+ORIGIN: ../../../flutter/shell/platform/windows/flutter_windows_view_controller.h + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/shell/platform/windows/keyboard_handler_base.h + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/shell/platform/windows/keyboard_key_channel_handler.cc + ../../../flutter/LICENSE
 ORIGIN: ../../../flutter/shell/platform/windows/keyboard_key_channel_handler.h + ../../../flutter/LICENSE
@@ -4612,10 +4618,10 @@ FILE: ../../../flutter/impeller/entity/contents/filters/color_filter_contents.cc
 FILE: ../../../flutter/impeller/entity/contents/filters/color_filter_contents.h
 FILE: ../../../flutter/impeller/entity/contents/filters/color_matrix_filter_contents.cc
 FILE: ../../../flutter/impeller/entity/contents/filters/color_matrix_filter_contents.h
+FILE: ../../../flutter/impeller/entity/contents/filters/directional_gaussian_blur_filter_contents.cc
+FILE: ../../../flutter/impeller/entity/contents/filters/directional_gaussian_blur_filter_contents.h
 FILE: ../../../flutter/impeller/entity/contents/filters/filter_contents.cc
 FILE: ../../../flutter/impeller/entity/contents/filters/filter_contents.h
-FILE: ../../../flutter/impeller/entity/contents/filters/gaussian_blur_filter_contents.cc
-FILE: ../../../flutter/impeller/entity/contents/filters/gaussian_blur_filter_contents.h
 FILE: ../../../flutter/impeller/entity/contents/filters/inputs/contents_filter_input.cc
 FILE: ../../../flutter/impeller/entity/contents/filters/inputs/contents_filter_input.h
 FILE: ../../../flutter/impeller/entity/contents/filters/inputs/filter_contents_filter_input.cc
@@ -5109,6 +5115,11 @@ FILE: ../../../flutter/impeller/scene/shaders/unlit.frag
 FILE: ../../../flutter/impeller/scene/shaders/unskinned.vert
 FILE: ../../../flutter/impeller/scene/skin.cc
 FILE: ../../../flutter/impeller/scene/skin.h
+FILE: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive.cc
+FILE: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive.fbs
+FILE: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive.h
+FILE: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive_writer.cc
+FILE: ../../../flutter/impeller/shader_archive/multi_arch_shader_archive_writer.h
 FILE: ../../../flutter/impeller/shader_archive/shader_archive.cc
 FILE: ../../../flutter/impeller/shader_archive/shader_archive.fbs
 FILE: ../../../flutter/impeller/shader_archive/shader_archive.h
@@ -6723,6 +6734,7 @@ FILE: ../../../flutter/shell/platform/windows/flutter_windows_texture_registrar.
 FILE: ../../../flutter/shell/platform/windows/flutter_windows_texture_registrar.h
 FILE: ../../../flutter/shell/platform/windows/flutter_windows_view.cc
 FILE: ../../../flutter/shell/platform/windows/flutter_windows_view.h
+FILE: ../../../flutter/shell/platform/windows/flutter_windows_view_controller.h
 FILE: ../../../flutter/shell/platform/windows/keyboard_handler_base.h
 FILE: ../../../flutter/shell/platform/windows/keyboard_key_channel_handler.cc
 FILE: ../../../flutter/shell/platform/windows/keyboard_key_channel_handler.h
