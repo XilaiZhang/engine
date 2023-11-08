@@ -18,7 +18,7 @@ vars = {
   'llvm_git': 'https://llvm.googlesource.com',
   # OCMock is for testing only so there is no google clone
   'ocmock_git': 'https://github.com/erikdoe/ocmock.git',
-  'skia_revision': 'e585bb68893be9e4f771f1da6e850b3f587ba9c4',
+  'skia_revision': '1241a903cd332fd9ad1115dd7aae1327ec3c64f3',
 
   # WARNING: DO NOT EDIT canvaskit_cipd_instance MANUALLY
   # See `lib/web_ui/README.md` for how to roll CanvasKit to a new version.
@@ -267,7 +267,7 @@ allowed_hosts = [
 ]
 
 deps = {
-  'src': 'https://github.com/flutter/buildroot.git' + '@' + '5ced4367fee2721f6eda34802dc28b1335637c63',
+  'src': 'https://github.com/flutter/buildroot.git' + '@' + '44ca359ea6fada2fa1bb007b81994fa4dc8ce2ec',
 
   'src/flutter/third_party/rapidjson':
    Var('fuchsia_git') + '/third_party/rapidjson' + '@' + 'ef3564c5c8824989393b87df25355baf35ff544b',
@@ -766,7 +766,7 @@ deps = {
      'packages': [
        {
         'package': 'flutter/android/sdk/all/${{platform}}',
-        'version': 'version:33v6'
+        'version': 'version:34v3'
        }
      ],
      'condition': 'download_android_deps',
@@ -798,7 +798,7 @@ deps = {
      'packages': [
        {
         'package': 'flutter/java/openjdk/${{platform}}',
-        'version': 'version:11'
+        'version': 'version:17'
        }
      ],
      'condition': 'download_android_deps',
