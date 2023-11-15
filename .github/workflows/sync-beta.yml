@@ -3,6 +3,10 @@
 #      # every 5 minutes
 #     - cron:  '*/5 * * * *'
 
+on:
+  workflow_dispatch
+  
+
 # Adpat from https://stackoverflow.com/questions/23793062/can-forks-be-synced-automatically-in-github.
 jobs:
   merge:
