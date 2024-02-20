@@ -174,25 +174,9 @@ NSEvent* CreateMouseEvent(NSEventModifierFlags modifierFlags) {
 
 #pragma mark - gtest tests
 
-// AutoreleasePoolTest subclass that exists simply to provide more specific naming.
-class FlutterViewControllerTest : public AutoreleasePoolTest {
- public:
-  FlutterViewControllerTest() = default;
-  ~FlutterViewControllerTest() = default;
-
- private:
-  FML_DISALLOW_COPY_AND_ASSIGN(FlutterViewControllerTest);
-};
-
-// MockFlutterEngineTest subclass that exists simply to provide more specific naming.
-class FlutterViewControllerMockEngineTest : public MockFlutterEngineTest {
- public:
-  FlutterViewControllerMockEngineTest() = default;
-  ~FlutterViewControllerMockEngineTest() = default;
-
- private:
-  FML_DISALLOW_COPY_AND_ASSIGN(FlutterViewControllerMockEngineTest);
-};
+// Test-specific names for AutoreleasePoolTest, MockFlutterEngineTest fixtures.
+using FlutterViewControllerTest = AutoreleasePoolTest;
+using FlutterViewControllerMockEngineTest = MockFlutterEngineTest;
 
 TEST_F(FlutterViewControllerTest, HasViewThatHidesOtherViewsInAccessibility) {
   FlutterViewController* viewControllerMock = CreateMockViewController();
@@ -1010,6 +994,12 @@ TEST_F(FlutterViewControllerTest, testViewControllerIsReleased) {
   EXPECT_EQ(last_event.phase, kPanZoomEnd);
   EXPECT_EQ(last_event.device_kind, kFlutterPointerDeviceKindTrackpad);
   EXPECT_EQ(last_event.signal_kind, kFlutterPointerSignalKindNone);
+
+  // Test that stray NSEventPhaseCancelled event does not crash
+  called = false;
+  [viewController rotateWithEvent:flutter::testing::MockGestureEvent(NSEventTypeRotate,
+                                                                     NSEventPhaseCancelled, 0, 0)];
+  EXPECT_FALSE(called);
 
   return true;
 }

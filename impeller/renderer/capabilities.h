@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#pragma once
+#ifndef FLUTTER_IMPELLER_RENDERER_CAPABILITIES_H_
+#define FLUTTER_IMPELLER_RENDERER_CAPABILITIES_H_
 
 #include <memory>
 
@@ -104,6 +105,12 @@ class Capabilities {
   ///         format was found.
   virtual PixelFormat GetDefaultDepthStencilFormat() const = 0;
 
+  /// @brief Returns the default pixel format for the alpha bitmap glyph atlas.
+  ///
+  ///        Some backends may use Red channel while others use grey. This
+  ///        should not have any impact
+  virtual PixelFormat GetDefaultGlyphAtlasFormat() const = 0;
+
  protected:
   Capabilities();
 
@@ -144,6 +151,8 @@ class CapabilitiesBuilder {
 
   CapabilitiesBuilder& SetSupportsDeviceTransientTextures(bool value);
 
+  CapabilitiesBuilder& SetDefaultGlyphAtlasFormat(PixelFormat value);
+
   std::unique_ptr<Capabilities> Build();
 
  private:
@@ -160,6 +169,7 @@ class CapabilitiesBuilder {
   std::optional<PixelFormat> default_color_format_ = std::nullopt;
   std::optional<PixelFormat> default_stencil_format_ = std::nullopt;
   std::optional<PixelFormat> default_depth_stencil_format_ = std::nullopt;
+  std::optional<PixelFormat> default_glyph_atlas_format_ = std::nullopt;
 
   CapabilitiesBuilder(const CapabilitiesBuilder&) = delete;
 
@@ -167,3 +177,5 @@ class CapabilitiesBuilder {
 };
 
 }  // namespace impeller
+
+#endif  // FLUTTER_IMPELLER_RENDERER_CAPABILITIES_H_

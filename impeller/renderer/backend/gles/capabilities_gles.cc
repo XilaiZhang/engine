@@ -4,6 +4,7 @@
 
 #include "impeller/renderer/backend/gles/capabilities_gles.h"
 
+#include "impeller/core/formats.h"
 #include "impeller/renderer/backend/gles/proc_table_gles.h"
 
 namespace impeller {
@@ -16,8 +17,6 @@ static const constexpr char* kTextureBorderClampExt =
     "GL_EXT_texture_border_clamp";
 static const constexpr char* kNvidiaTextureBorderClampExt =
     "GL_NV_texture_border_clamp";
-static const constexpr char* kOESTextureBorderClampExt =
-    "GL_OES_texture_border_clamp";
 
 // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_multisampled_render_to_texture.txt
 static const constexpr char* kMultisampledRenderToTextureExt =
@@ -104,11 +103,16 @@ CapabilitiesGLES::CapabilitiesGLES(const ProcTableGLES& gl) {
     num_shader_binary_formats = value;
   }
 
+  if (desc->IsES()) {
+    default_glyph_atlas_format_ = PixelFormat::kA8UNormInt;
+  } else {
+    default_glyph_atlas_format_ = PixelFormat::kR8UNormInt;
+  }
+
   supports_framebuffer_fetch_ = desc->HasExtension(kFramebufferFetchExt);
 
   if (desc->HasExtension(kTextureBorderClampExt) ||
-      desc->HasExtension(kNvidiaTextureBorderClampExt) ||
-      desc->HasExtension(kOESTextureBorderClampExt)) {
+      desc->HasExtension(kNvidiaTextureBorderClampExt)) {
     supports_decal_sampler_address_mode_ = true;
   }
 
@@ -120,6 +124,8 @@ CapabilitiesGLES::CapabilitiesGLES(const ProcTableGLES& gl) {
     gl.GetIntegerv(GL_MAX_SAMPLES_EXT, &value);
     supports_offscreen_msaa_ = value >= 4;
   }
+
+  is_angle_ = desc->IsANGLE();
 }
 
 size_t CapabilitiesGLES::GetMaxTextureUnits(ShaderStage stage) const {
@@ -129,8 +135,6 @@ size_t CapabilitiesGLES::GetMaxTextureUnits(ShaderStage stage) const {
     case ShaderStage::kFragment:
       return max_texture_image_units;
     case ShaderStage::kUnknown:
-    case ShaderStage::kTessellationControl:
-    case ShaderStage::kTessellationEvaluation:
     case ShaderStage::kCompute:
       return 0u;
   }
@@ -191,6 +195,14 @@ PixelFormat CapabilitiesGLES::GetDefaultStencilFormat() const {
 
 PixelFormat CapabilitiesGLES::GetDefaultDepthStencilFormat() const {
   return PixelFormat::kD24UnormS8Uint;
+}
+
+bool CapabilitiesGLES::IsANGLE() const {
+  return is_angle_;
+}
+
+PixelFormat CapabilitiesGLES::GetDefaultGlyphAtlasFormat() const {
+  return default_glyph_atlas_format_;
 }
 
 }  // namespace impeller

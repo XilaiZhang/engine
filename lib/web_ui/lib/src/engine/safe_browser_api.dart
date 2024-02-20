@@ -24,9 +24,6 @@ import 'display.dart';
 import 'dom.dart';
 import 'vector_math.dart';
 
-export 'package:js/js_util.dart' show allowInterop;
-
-
 /// Returns true if [object] has property [name], false otherwise.
 ///
 /// This is equivalent to writing `name in object` in plain JavaScript.
@@ -214,7 +211,7 @@ extension ImageDecoderExtension on ImageDecoder {
   external JSBoolean get _complete;
   bool get complete => _complete.toDart;
 
-  external JSPromise decode(DecodeOptions options);
+  external JSPromise<JSAny?> decode(DecodeOptions options);
   external JSVoid close();
 }
 
@@ -288,8 +285,9 @@ extension VideoFrameExtension on VideoFrame {
   double allocationSize() => _allocationSize().toDartDouble;
 
   @JS('copyTo')
-  external JSPromise _copyTo(JSAny destination);
-  JSPromise copyTo(Object destination) => _copyTo(destination.toJSAnyShallow);
+  external JSPromise<JSAny?> _copyTo(JSAny destination);
+  JSPromise<JSAny?> copyTo(Object destination) =>
+      _copyTo(destination.toJSAnyShallow);
 
   @JS('format')
   external JSString? get _format;
@@ -330,7 +328,7 @@ extension VideoFrameExtension on VideoFrame {
 class ImageTrackList {}
 
 extension ImageTrackListExtension on ImageTrackList {
-  external JSPromise get ready;
+  external JSPromise<JSAny?> get ready;
   external ImageTrack? get selectedTrack;
 }
 

@@ -8,8 +8,8 @@
 #include <impeller/types.glsl>
 #include "blend_select.glsl"
 
-layout(constant_id = 0) const int blend_type = 0;
-layout(constant_id = 1) const int supports_decal = 1;
+layout(constant_id = 0) const float blend_type = 0.0;
+layout(constant_id = 1) const float supports_decal = 1.0;
 
 uniform BlendInfo {
   float16_t dst_input_alpha;
@@ -36,20 +36,22 @@ f16vec4 Sample(f16sampler2D texture_sampler, vec2 texture_coords) {
 }
 
 void main() {
-  f16vec4 dst_sample = Sample(texture_sampler_dst,  // sampler
-                              v_dst_texture_coords  // texture coordinates
-                              ) *
-                       blend_info.dst_input_alpha;
-
-  f16vec4 dst = dst_sample;
+  f16vec4 dst =
+      IPHalfUnpremultiply(Sample(texture_sampler_dst,  // sampler
+                                 v_dst_texture_coords  // texture coordinates
+                                 ));
+  dst *= blend_info.dst_input_alpha;
   f16vec4 src = blend_info.color_factor > 0.0hf
                     ? blend_info.color
-                    : Sample(texture_sampler_src,  // sampler
-                             v_src_texture_coords  // texture coordinates
-                             ) *
-                          blend_info.src_input_alpha;
+                    : IPHalfUnpremultiply(Sample(
+                          texture_sampler_src,  // sampler
+                          v_src_texture_coords  // texture coordinates
+                          ));
+  if (blend_info.color_factor == 0.0hf) {
+    src.a *= blend_info.src_input_alpha;
+  }
 
-  f16vec3 blend_result = AdvancedBlend(dst.rgb, src.rgb, blend_type);
-  f16vec4 blended = mix(src, f16vec4(blend_result, dst.a), dst.a);
-  frag_color = mix(dst_sample, blended, src.a);
+  f16vec3 blend_result = AdvancedBlend(dst.rgb, src.rgb, int(blend_type));
+
+  frag_color = IPApplyBlendedColor(dst, src, blend_result);
 }

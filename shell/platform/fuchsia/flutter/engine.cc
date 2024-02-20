@@ -185,15 +185,15 @@ flutter::ThreadHost Engine::CreateThreadHost(
 
   thread_host_config.SetRasterConfig(
       {flutter::ThreadHost::ThreadHostConfig::MakeThreadName(
-           flutter::ThreadHost::Type::RASTER, name_prefix),
+           flutter::ThreadHost::Type::kRaster, name_prefix),
        fml::Thread::ThreadPriority::kRaster});
   thread_host_config.SetUIConfig(
       {flutter::ThreadHost::ThreadHostConfig::MakeThreadName(
-           flutter::ThreadHost::Type::UI, name_prefix),
+           flutter::ThreadHost::Type::kUi, name_prefix),
        fml::Thread::ThreadPriority::kDisplay});
   thread_host_config.SetIOConfig(
       {flutter::ThreadHost::ThreadHostConfig::MakeThreadName(
-           flutter::ThreadHost::Type::IO, name_prefix),
+           flutter::ThreadHost::Type::kIo, name_prefix),
        fml::Thread::ThreadPriority::kNormal});
 
   return flutter::ThreadHost(thread_host_config);
@@ -611,7 +611,7 @@ void Engine::Initialize(
     ZX_ASSERT(runner_services->Connect(
                   memory_pressure_provider_.NewRequest()) == ZX_OK);
 
-    FML_VLOG(-1) << "Registering memorypressure watcher";
+    FML_VLOG(1) << "Registering memorypressure watcher";
 
     // Register for changes, which will make the request for the initial
     // memory level.
@@ -647,12 +647,12 @@ void Engine::Initialize(
         FML_LOG(WARNING) << "Got intl Profile without locales";
       }
       auto message = MakeLocalizationPlatformMessage(profile);
-      FML_VLOG(-1) << "Sending LocalizationPlatformMessage";
+      FML_VLOG(1) << "Sending LocalizationPlatformMessage";
       weak->shell_->GetPlatformView()->DispatchPlatformMessage(
           std::move(message));
     };
 
-    FML_VLOG(-1) << "Requesting intl Profile";
+    FML_VLOG(1) << "Requesting intl Profile";
 
     // Make the initial request
     intl_property_provider_->GetProfile(get_profile_callback);
@@ -660,7 +660,7 @@ void Engine::Initialize(
     // And register for changes
     intl_property_provider_.events().OnChange = [this, runner_services,
                                                  get_profile_callback]() {
-      FML_VLOG(-1) << fuchsia::intl::PropertyProvider::Name_ << ": OnChange";
+      FML_VLOG(1) << fuchsia::intl::PropertyProvider::Name_ << ": OnChange";
       runner_services->Connect(intl_property_provider_.NewRequest());
       intl_property_provider_->GetProfile(get_profile_callback);
     };

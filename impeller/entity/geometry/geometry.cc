@@ -4,17 +4,92 @@
 
 #include "impeller/entity/geometry/geometry.h"
 
+#include <memory>
 #include <optional>
 
+#include "fml/status.h"
+#include "impeller/entity/contents/content_context.h"
+#include "impeller/entity/geometry/circle_geometry.h"
 #include "impeller/entity/geometry/cover_geometry.h"
+#include "impeller/entity/geometry/ellipse_geometry.h"
 #include "impeller/entity/geometry/fill_path_geometry.h"
 #include "impeller/entity/geometry/line_geometry.h"
 #include "impeller/entity/geometry/point_field_geometry.h"
 #include "impeller/entity/geometry/rect_geometry.h"
+#include "impeller/entity/geometry/round_rect_geometry.h"
 #include "impeller/entity/geometry/stroke_path_geometry.h"
 #include "impeller/geometry/rect.h"
 
 namespace impeller {
+
+GeometryResult Geometry::ComputePositionGeometry(
+    const ContentContext& renderer,
+    const Tessellator::VertexGenerator& generator,
+    const Entity& entity,
+    RenderPass& pass) {
+  using VT = SolidFillVertexShader::PerVertexData;
+
+  size_t count = generator.GetVertexCount();
+
+  return GeometryResult{
+      .type = generator.GetTriangleType(),
+      .vertex_buffer =
+          {
+              .vertex_buffer = renderer.GetTransientsBuffer().Emplace(
+                  count * sizeof(VT), alignof(VT),
+                  [&generator](uint8_t* buffer) {
+                    auto vertices = reinterpret_cast<VT*>(buffer);
+                    generator.GenerateVertices([&vertices](const Point& p) {
+                      *vertices++ = {
+                          .position = p,
+                      };
+                    });
+                    FML_DCHECK(vertices == reinterpret_cast<VT*>(buffer) +
+                                               generator.GetVertexCount());
+                  }),
+              .vertex_count = count,
+              .index_type = IndexType::kNone,
+          },
+      .transform = pass.GetOrthographicTransform() * entity.GetTransform(),
+      .prevent_overdraw = false,
+  };
+}
+
+GeometryResult Geometry::ComputePositionUVGeometry(
+    const ContentContext& renderer,
+    const Tessellator::VertexGenerator& generator,
+    const Matrix& uv_transform,
+    const Entity& entity,
+    RenderPass& pass) {
+  using VT = TextureFillVertexShader::PerVertexData;
+
+  size_t count = generator.GetVertexCount();
+
+  return GeometryResult{
+      .type = generator.GetTriangleType(),
+      .vertex_buffer =
+          {
+              .vertex_buffer = renderer.GetTransientsBuffer().Emplace(
+                  count * sizeof(VT), alignof(VT),
+                  [&generator, &uv_transform](uint8_t* buffer) {
+                    auto vertices = reinterpret_cast<VT*>(buffer);
+                    generator.GenerateVertices(
+                        [&vertices, &uv_transform](const Point& p) {  //
+                          *vertices++ = {
+                              .position = p,
+                              .texture_coords = uv_transform * p,
+                          };
+                        });
+                    FML_DCHECK(vertices == reinterpret_cast<VT*>(buffer) +
+                                               generator.GetVertexCount());
+                  }),
+              .vertex_count = count,
+              .index_type = IndexType::kNone,
+          },
+      .transform = pass.GetOrthographicTransform() * entity.GetTransform(),
+      .prevent_overdraw = false,
+  };
+}
 
 VertexBufferBuilder<TextureFillVertexShader::PerVertexData>
 ComputeUVGeometryCPU(
@@ -38,19 +113,37 @@ ComputeUVGeometryCPU(
 }
 
 GeometryResult ComputeUVGeometryForRect(Rect source_rect,
-                                        Rect texture_coverage,
+                                        Rect texture_bounds,
                                         Matrix effect_transform,
                                         const ContentContext& renderer,
                                         const Entity& entity,
                                         RenderPass& pass) {
-  auto& host_buffer = pass.GetTransientsBuffer();
+  auto& host_buffer = renderer.GetTransientsBuffer();
 
-  auto uv_transform =
-      texture_coverage.GetNormalizingTransform() * effect_transform;
-  std::vector<Point> data(8);
+  // Calculate UV-specific transform based on texture coverage and effect.
+  // For example, if the texture is 100x100 and the effect transform is
+  // scaling by 2.0, texture_bounds.GetNormalizingTransform() will result in a
+  // Matrix that scales by 0.01, and then if the effect_transform is
+  // Matrix::MakeScale(Vector2{2, 2}), the resulting uv_transform will have x
+  // and y basis vectors with scale 0.02.
+  auto uv_transform = texture_bounds.GetNormalizingTransform() *  //
+                      effect_transform;
+
+  // Allocate space for vertex and UV data (4 vertices)
+  // 0: position
+  // 1: UV
+  // 2: position
+  // 3: UV
+  // etc.
+  Point data[8];
+
+  // Get the raw points from the rect and transform them into UV space.
   auto points = source_rect.GetPoints();
   for (auto i = 0u, j = 0u; i < 8; i += 2, j++) {
+    // Store original coordinates.
     data[i] = points[j];
+
+    // Store transformed UV coordinates.
     data[i + 1] = uv_transform * points[j];
   }
 
@@ -59,41 +152,38 @@ GeometryResult ComputeUVGeometryForRect(Rect source_rect,
       .vertex_buffer =
           {
               .vertex_buffer = host_buffer.Emplace(
-                  data.data(), 16 * sizeof(float), alignof(float)),
+                  /*buffer=*/data,
+                  /*length=*/16 * sizeof(float),
+                  /*align=*/alignof(float)),
               .vertex_count = 4,
               .index_type = IndexType::kNone,
           },
-      .transform = Matrix::MakeOrthographic(pass.GetRenderTargetSize()) *
-                   entity.GetTransformation(),
+      .transform = pass.GetOrthographicTransform() * entity.GetTransform(),
       .prevent_overdraw = false,
   };
 }
-
-Geometry::Geometry() = default;
-
-Geometry::~Geometry() = default;
 
 GeometryResult Geometry::GetPositionUVBuffer(Rect texture_coverage,
                                              Matrix effect_transform,
                                              const ContentContext& renderer,
                                              const Entity& entity,
-                                             RenderPass& pass) {
+                                             RenderPass& pass) const {
   return {};
 }
 
-std::unique_ptr<Geometry> Geometry::MakeFillPath(
+std::shared_ptr<Geometry> Geometry::MakeFillPath(
     const Path& path,
     std::optional<Rect> inner_rect) {
-  return std::make_unique<FillPathGeometry>(path, inner_rect);
+  return std::make_shared<FillPathGeometry>(path, inner_rect);
 }
 
-std::unique_ptr<Geometry> Geometry::MakePointField(std::vector<Point> points,
+std::shared_ptr<Geometry> Geometry::MakePointField(std::vector<Point> points,
                                                    Scalar radius,
                                                    bool round) {
-  return std::make_unique<PointFieldGeometry>(std::move(points), radius, round);
+  return std::make_shared<PointFieldGeometry>(std::move(points), radius, round);
 }
 
-std::unique_ptr<Geometry> Geometry::MakeStrokePath(const Path& path,
+std::shared_ptr<Geometry> Geometry::MakeStrokePath(const Path& path,
                                                    Scalar stroke_width,
                                                    Scalar miter_limit,
                                                    Cap stroke_cap,
@@ -102,23 +192,43 @@ std::unique_ptr<Geometry> Geometry::MakeStrokePath(const Path& path,
   if (miter_limit < 0) {
     miter_limit = 4.0;
   }
-  return std::make_unique<StrokePathGeometry>(path, stroke_width, miter_limit,
+  return std::make_shared<StrokePathGeometry>(path, stroke_width, miter_limit,
                                               stroke_cap, stroke_join);
 }
 
-std::unique_ptr<Geometry> Geometry::MakeCover() {
-  return std::make_unique<CoverGeometry>();
+std::shared_ptr<Geometry> Geometry::MakeCover() {
+  return std::make_shared<CoverGeometry>();
 }
 
-std::unique_ptr<Geometry> Geometry::MakeRect(Rect rect) {
-  return std::make_unique<RectGeometry>(rect);
+std::shared_ptr<Geometry> Geometry::MakeRect(const Rect& rect) {
+  return std::make_shared<RectGeometry>(rect);
 }
 
-std::unique_ptr<Geometry> Geometry::MakeLine(Point p0,
-                                             Point p1,
+std::shared_ptr<Geometry> Geometry::MakeOval(const Rect& rect) {
+  return std::make_shared<EllipseGeometry>(rect);
+}
+
+std::shared_ptr<Geometry> Geometry::MakeLine(const Point& p0,
+                                             const Point& p1,
                                              Scalar width,
                                              Cap cap) {
-  return std::make_unique<LineGeometry>(p0, p1, width, cap);
+  return std::make_shared<LineGeometry>(p0, p1, width, cap);
+}
+
+std::shared_ptr<Geometry> Geometry::MakeCircle(const Point& center,
+                                               Scalar radius) {
+  return std::make_shared<CircleGeometry>(center, radius);
+}
+
+std::shared_ptr<Geometry> Geometry::MakeStrokedCircle(const Point& center,
+                                                      Scalar radius,
+                                                      Scalar stroke_width) {
+  return std::make_shared<CircleGeometry>(center, radius, stroke_width);
+}
+
+std::shared_ptr<Geometry> Geometry::MakeRoundRect(const Rect& rect,
+                                                  const Size& radii) {
+  return std::make_shared<RoundRectGeometry>(rect, radii);
 }
 
 bool Geometry::CoversArea(const Matrix& transform, const Rect& rect) const {

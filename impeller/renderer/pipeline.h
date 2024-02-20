@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#pragma once
+#ifndef FLUTTER_IMPELLER_RENDERER_PIPELINE_H_
+#define FLUTTER_IMPELLER_RENDERER_PIPELINE_H_
 
 #include <future>
 
 #include "compute_pipeline_descriptor.h"
-#include "flutter/fml/macros.h"
 #include "impeller/renderer/compute_pipeline_builder.h"
 #include "impeller/renderer/compute_pipeline_descriptor.h"
 #include "impeller/renderer/context.h"
@@ -64,12 +64,13 @@ class Pipeline {
       std::function<void(T& desc)> descriptor_callback) const;
 
  protected:
+  const std::weak_ptr<PipelineLibrary> library_;
+
+  const T desc_;
+
   Pipeline(std::weak_ptr<PipelineLibrary> library, T desc);
 
  private:
-  const std::weak_ptr<PipelineLibrary> library_;
-  const T desc_;
-
   Pipeline(const Pipeline&) = delete;
 
   Pipeline& operator=(const Pipeline&) = delete;
@@ -171,3 +172,5 @@ class ComputePipelineT {
 };
 
 }  // namespace impeller
+
+#endif  // FLUTTER_IMPELLER_RENDERER_PIPELINE_H_

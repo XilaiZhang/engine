@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#pragma once
+#ifndef FLUTTER_IMPELLER_RENDERER_BACKEND_VULKAN_CAPABILITIES_VK_H_
+#define FLUTTER_IMPELLER_RENDERER_BACKEND_VULKAN_CAPABILITIES_VK_H_
 
 #include <cstdint>
 #include <map>
@@ -10,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "flutter/fml/macros.h"
 #include "impeller/base/backend_cast.h"
 #include "impeller/renderer/backend/vulkan/vk.h"
 #include "impeller/renderer/capabilities.h"
@@ -100,6 +100,9 @@ class CapabilitiesVK final : public Capabilities,
   // |Capabilities|
   PixelFormat GetDefaultDepthStencilFormat() const override;
 
+  // |Capabilities|
+  PixelFormat GetDefaultGlyphAtlasFormat() const override;
+
  private:
   bool validations_enabled_ = false;
   std::map<std::string, std::set<std::string>> exts_;
@@ -122,3 +125,5 @@ class CapabilitiesVK final : public Capabilities,
 };
 
 }  // namespace impeller
+
+#endif  // FLUTTER_IMPELLER_RENDERER_BACKEND_VULKAN_CAPABILITIES_VK_H_

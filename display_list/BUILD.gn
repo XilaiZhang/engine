@@ -158,6 +158,7 @@ if (enable_unittests) {
       "//flutter/display_list/testing:display_list_testing",
       "//flutter/impeller/typographer/backends/skia:typographer_skia_backend",
       "//flutter/testing",
+      "//flutter/third_party/txt",
     ]
 
     if (!defined(defines)) {
@@ -213,6 +214,7 @@ source_set("display_list_benchmarks_source") {
   deps = [
     ":display_list",
     ":display_list_fixtures",
+    "$dart_src/runtime:libdart_jit",  # for tracing
     "//flutter/benchmarking",
     "//flutter/common/graphics",
     "//flutter/display_list/testing:display_list_surface_provider",
@@ -221,7 +223,6 @@ source_set("display_list_benchmarks_source") {
     "//flutter/skia",
     "//flutter/testing:skia",
     "//flutter/testing:testing_lib",
-    "//third_party/dart/runtime:libdart_jit",  # for tracing
   ]
 }
 

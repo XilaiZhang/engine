@@ -1297,7 +1297,7 @@ TEST_F(EmbedderTest, VerifyB143464703WithSoftwareBackend) {
   fml::CountDownLatch latch(1);
   context.GetCompositor().SetNextPresentCallback(
       [&](const FlutterLayer** layers, size_t layers_count) {
-        ASSERT_EQ(layers_count, 3u);
+        ASSERT_EQ(layers_count, 2u);
 
         // Layer 0 (Root)
         {
@@ -1343,36 +1343,6 @@ TEST_F(EmbedderTest, VerifyB143464703WithSoftwareBackend) {
           layer.offset = FlutterPointMake(135.0, 60.0);
 
           ASSERT_EQ(*layers[1], layer);
-        }
-
-        // Layer 2
-        {
-          FlutterBackingStore backing_store = *layers[2]->backing_store;
-          backing_store.type = kFlutterBackingStoreTypeSoftware;
-          backing_store.did_update = true;
-
-          FlutterRect paint_region_rects[] = {
-              FlutterRectMakeLTRB(135, 0, 1024, 60),
-          };
-          FlutterRegion paint_region = {
-              .struct_size = sizeof(FlutterRegion),
-              .rects_count = 1,
-              .rects = paint_region_rects,
-          };
-          FlutterBackingStorePresentInfo present_info = {
-              .struct_size = sizeof(FlutterBackingStorePresentInfo),
-              .paint_region = &paint_region,
-          };
-
-          FlutterLayer layer = {};
-          layer.struct_size = sizeof(layer);
-          layer.type = kFlutterLayerContentTypeBackingStore;
-          layer.backing_store = &backing_store;
-          layer.size = FlutterSizeMake(1024.0, 600.0);
-          layer.offset = FlutterPointMake(0.0, 0.0);
-          layer.backing_store_present_info = &present_info;
-
-          ASSERT_EQ(*layers[2], layer);
         }
 
         latch.CountDown();
@@ -2158,21 +2128,33 @@ TEST_F(EmbedderTest, KeyDataIsCorrectlySerialized) {
     message_latch->Signal();
   };
 
-  auto& context = GetEmbedderContext(EmbedderTestContextType::kSoftwareContext);
-  EmbedderConfigBuilder builder(context);
-  builder.SetSoftwareRendererConfig();
-  builder.SetDartEntrypoint("key_data_echo");
+  auto platform_task_runner = CreateNewThread("platform_thread");
+
+  UniqueEngine engine;
   fml::AutoResetWaitableEvent ready;
-  context.AddNativeCallback(
-      "SignalNativeTest",
-      CREATE_NATIVE_ENTRY(
-          [&ready](Dart_NativeArguments args) { ready.Signal(); }));
+  platform_task_runner->PostTask([&]() {
+    auto& context =
+        GetEmbedderContext(EmbedderTestContextType::kSoftwareContext);
+    EmbedderConfigBuilder builder(context);
+    builder.SetSoftwareRendererConfig();
+    builder.SetDartEntrypoint("key_data_echo");
+    builder.SetPlatformMessageCallback(
+        [&](const FlutterPlatformMessage* message) {
+          FlutterEngineSendPlatformMessageResponse(
+              engine.get(), message->response_handle, nullptr, 0);
+        });
+    context.AddNativeCallback(
+        "SignalNativeTest",
+        CREATE_NATIVE_ENTRY(
+            [&ready](Dart_NativeArguments args) { ready.Signal(); }));
 
-  context.AddNativeCallback("EchoKeyEvent",
-                            CREATE_NATIVE_ENTRY(native_echo_event));
+    context.AddNativeCallback("EchoKeyEvent",
+                              CREATE_NATIVE_ENTRY(native_echo_event));
 
-  auto engine = builder.LaunchEngine();
-  ASSERT_TRUE(engine.is_valid());
+    engine = builder.LaunchEngine();
+    ASSERT_TRUE(engine.is_valid());
+  });
+
   ready.Wait();
 
   // A normal down event
@@ -2186,8 +2168,10 @@ TEST_F(EmbedderTest, KeyDataIsCorrectlySerialized) {
       .synthesized = false,
       .device_type = kFlutterKeyEventDeviceTypeKeyboard,
   };
-  FlutterEngineSendKeyEvent(engine.get(), &down_event_upper_a, nullptr,
-                            nullptr);
+  platform_task_runner->PostTask([&]() {
+    FlutterEngineSendKeyEvent(engine.get(), &down_event_upper_a, nullptr,
+                              nullptr);
+  });
   message_latch->Wait();
 
   ExpectKeyEventEq(echoed_event, down_event_upper_a);
@@ -2204,8 +2188,10 @@ TEST_F(EmbedderTest, KeyDataIsCorrectlySerialized) {
       .synthesized = false,
       .device_type = kFlutterKeyEventDeviceTypeKeyboard,
   };
-  FlutterEngineSendKeyEvent(engine.get(), &repeat_event_wide_char, nullptr,
-                            nullptr);
+  platform_task_runner->PostTask([&]() {
+    FlutterEngineSendKeyEvent(engine.get(), &repeat_event_wide_char, nullptr,
+                              nullptr);
+  });
   message_latch->Wait();
 
   ExpectKeyEventEq(echoed_event, repeat_event_wide_char);
@@ -2222,11 +2208,20 @@ TEST_F(EmbedderTest, KeyDataIsCorrectlySerialized) {
       .synthesized = true,
       .device_type = kFlutterKeyEventDeviceTypeKeyboard,
   };
-  FlutterEngineSendKeyEvent(engine.get(), &up_event, nullptr, nullptr);
+  platform_task_runner->PostTask([&]() {
+    FlutterEngineSendKeyEvent(engine.get(), &up_event, nullptr, nullptr);
+  });
   message_latch->Wait();
 
   ExpectKeyEventEq(echoed_event, up_event);
   EXPECT_EQ(echoed_char, 0llu);
+
+  fml::AutoResetWaitableEvent shutdown_latch;
+  platform_task_runner->PostTask([&]() {
+    engine.reset();
+    shutdown_latch.Signal();
+  });
+  shutdown_latch.Wait();
 }
 
 TEST_F(EmbedderTest, KeyDataAreBuffered) {
@@ -2255,21 +2250,32 @@ TEST_F(EmbedderTest, KeyDataAreBuffered) {
     message_latch->Signal();
   };
 
-  auto& context = GetEmbedderContext(EmbedderTestContextType::kSoftwareContext);
-  EmbedderConfigBuilder builder(context);
-  builder.SetSoftwareRendererConfig();
-  builder.SetDartEntrypoint("key_data_late_echo");
+  auto platform_task_runner = CreateNewThread("platform_thread");
+
+  UniqueEngine engine;
   fml::AutoResetWaitableEvent ready;
-  context.AddNativeCallback(
-      "SignalNativeTest",
-      CREATE_NATIVE_ENTRY(
-          [&ready](Dart_NativeArguments args) { ready.Signal(); }));
+  platform_task_runner->PostTask([&]() {
+    auto& context =
+        GetEmbedderContext(EmbedderTestContextType::kSoftwareContext);
+    EmbedderConfigBuilder builder(context);
+    builder.SetSoftwareRendererConfig();
+    builder.SetDartEntrypoint("key_data_late_echo");
+    builder.SetPlatformMessageCallback(
+        [&](const FlutterPlatformMessage* message) {
+          FlutterEngineSendPlatformMessageResponse(
+              engine.get(), message->response_handle, nullptr, 0);
+        });
+    context.AddNativeCallback(
+        "SignalNativeTest",
+        CREATE_NATIVE_ENTRY(
+            [&ready](Dart_NativeArguments args) { ready.Signal(); }));
 
-  context.AddNativeCallback("EchoKeyEvent",
-                            CREATE_NATIVE_ENTRY(native_echo_event));
+    context.AddNativeCallback("EchoKeyEvent",
+                              CREATE_NATIVE_ENTRY(native_echo_event));
 
-  auto engine = builder.LaunchEngine();
-  ASSERT_TRUE(engine.is_valid());
+    engine = builder.LaunchEngine();
+    ASSERT_TRUE(engine.is_valid());
+  });
   ready.Wait();
 
   FlutterKeyEvent sample_event{
@@ -2284,7 +2290,11 @@ TEST_F(EmbedderTest, KeyDataAreBuffered) {
 
   // Send an event.
   sample_event.timestamp = 1.0l;
-  FlutterEngineSendKeyEvent(engine.get(), &sample_event, nullptr, nullptr);
+  platform_task_runner->PostTask([&]() {
+    FlutterEngineSendKeyEvent(engine.get(), &sample_event, nullptr, nullptr);
+    message_latch->Signal();
+  });
+  message_latch->Wait();
 
   // Should not receive echos because the callback is not set yet.
   EXPECT_EQ(echoed_events.size(), 0u);
@@ -2303,11 +2313,13 @@ TEST_F(EmbedderTest, KeyDataAreBuffered) {
       .response_handle = response_handle,
   };
 
-  FlutterEngineResult result =
-      FlutterEngineSendPlatformMessage(engine.get(), &message);
-  ASSERT_EQ(result, kSuccess);
+  platform_task_runner->PostTask([&]() {
+    FlutterEngineResult result =
+        FlutterEngineSendPlatformMessage(engine.get(), &message);
+    ASSERT_EQ(result, kSuccess);
 
-  FlutterPlatformMessageReleaseResponseHandle(engine.get(), response_handle);
+    FlutterPlatformMessageReleaseResponseHandle(engine.get(), response_handle);
+  });
 
   // message_latch->Wait();
   message_latch->Wait();
@@ -2316,11 +2328,20 @@ TEST_F(EmbedderTest, KeyDataAreBuffered) {
 
   // Send a second event.
   sample_event.timestamp = 10.0l;
-  FlutterEngineSendKeyEvent(engine.get(), &sample_event, nullptr, nullptr);
+  platform_task_runner->PostTask([&]() {
+    FlutterEngineSendKeyEvent(engine.get(), &sample_event, nullptr, nullptr);
+  });
   message_latch->Wait();
 
   // The event should be echoed, too.
   EXPECT_EQ(echoed_events.size(), 2u);
+
+  fml::AutoResetWaitableEvent shutdown_latch;
+  platform_task_runner->PostTask([&]() {
+    engine.reset();
+    shutdown_latch.Signal();
+  });
+  shutdown_latch.Wait();
 }
 
 TEST_F(EmbedderTest, KeyDataResponseIsCorrectlyInvoked) {
@@ -2693,6 +2714,48 @@ TEST_F(EmbedderTest, CanSendPointer) {
   ASSERT_EQ(result, kSuccess);
 
   count_latch.Wait();
+  message_latch.Wait();
+}
+
+/// Send a pointer event to Dart and wait until the Dart code echos with the
+/// view ID.
+TEST_F(EmbedderTest, CanSendPointerWithViewId) {
+  auto& context = GetEmbedderContext(EmbedderTestContextType::kSoftwareContext);
+  EmbedderConfigBuilder builder(context);
+  builder.SetSoftwareRendererConfig();
+  builder.SetDartEntrypoint("pointer_data_packet_view_id");
+
+  fml::AutoResetWaitableEvent ready_latch, count_latch, message_latch;
+  context.AddNativeCallback(
+      "SignalNativeTest",
+      CREATE_NATIVE_ENTRY(
+          [&ready_latch](Dart_NativeArguments args) { ready_latch.Signal(); }));
+  context.AddNativeCallback(
+      "SignalNativeMessage",
+      CREATE_NATIVE_ENTRY([&message_latch](Dart_NativeArguments args) {
+        auto message = tonic::DartConverter<std::string>::FromDart(
+            Dart_GetNativeArgument(args, 0));
+        ASSERT_EQ("ViewID: 2", message);
+        message_latch.Signal();
+      }));
+
+  auto engine = builder.LaunchEngine();
+  ASSERT_TRUE(engine.is_valid());
+
+  ready_latch.Wait();
+
+  FlutterPointerEvent pointer_event = {};
+  pointer_event.struct_size = sizeof(FlutterPointerEvent);
+  pointer_event.phase = FlutterPointerPhase::kAdd;
+  pointer_event.x = 123;
+  pointer_event.y = 456;
+  pointer_event.timestamp = static_cast<size_t>(1234567890);
+  pointer_event.view_id = 2;
+
+  FlutterEngineResult result =
+      FlutterEngineSendPointerEvent(engine.get(), &pointer_event, 1);
+  ASSERT_EQ(result, kSuccess);
+
   message_latch.Wait();
 }
 

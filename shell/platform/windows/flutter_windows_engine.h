@@ -22,8 +22,10 @@
 #include "flutter/shell/platform/common/incoming_message_dispatcher.h"
 #include "flutter/shell/platform/embedder/embedder.h"
 #include "flutter/shell/platform/windows/accessibility_bridge_windows.h"
-#include "flutter/shell/platform/windows/angle_surface_manager.h"
+#include "flutter/shell/platform/windows/compositor.h"
 #include "flutter/shell/platform/windows/cursor_handler.h"
+#include "flutter/shell/platform/windows/egl/manager.h"
+#include "flutter/shell/platform/windows/egl/proc_table.h"
 #include "flutter/shell/platform/windows/flutter_desktop_messenger.h"
 #include "flutter/shell/platform/windows/flutter_project_bundle.h"
 #include "flutter/shell/platform/windows/flutter_windows_texture_registrar.h"
@@ -41,6 +43,12 @@
 #include "third_party/rapidjson/include/rapidjson/document.h"
 
 namespace flutter {
+
+// The implicit view's ID.
+//
+// See:
+// https://api.flutter.dev/flutter/dart-ui/PlatformDispatcher/implicitView.html
+constexpr FlutterViewId kImplicitViewId = 0;
 
 class FlutterWindowsView;
 
@@ -102,19 +110,20 @@ class FlutterWindowsEngine {
   bool Run(std::string_view entrypoint);
 
   // Returns true if the engine is currently running.
-  bool running() { return engine_ != nullptr; }
+  virtual bool running() const { return engine_ != nullptr; }
 
   // Stops the engine. This invalidates the pointer returned by engine().
   //
   // Returns false if stopping the engine fails, or if it was not running.
   virtual bool Stop();
 
-  // Sets the view that is displaying this engine's content.
-  void SetView(FlutterWindowsView* view);
+  // Create the view that is displaying this engine's content.
+  std::unique_ptr<FlutterWindowsView> CreateView(
+      std::unique_ptr<WindowBindingHandler> window);
 
   // The view displaying this engine's content, if any. This will be null for
   // headless engines.
-  FlutterWindowsView* view() { return view_; }
+  FlutterWindowsView* view(FlutterViewId view_id) const;
 
   // Returns the currently configured Plugin Registrar.
   FlutterDesktopPluginRegistrarRef GetRegistrar();
@@ -139,9 +148,9 @@ class FlutterWindowsEngine {
     return texture_registrar_.get();
   }
 
-  // The ANGLE surface manager object. If this is nullptr, then we are
+  // The EGL manager object. If this is nullptr, then we are
   // rendering using software instead of OpenGL.
-  AngleSurfaceManager* surface_manager() { return surface_manager_.get(); }
+  egl::Manager* egl_manager() const { return egl_manager_.get(); }
 
   WindowProcDelegateManager* window_proc_delegate_manager() {
     return window_proc_delegate_manager_.get();
@@ -201,7 +210,7 @@ class FlutterWindowsEngine {
   bool MarkExternalTextureFrameAvailable(int64_t texture_id);
 
   // Posts the given callback onto the raster thread.
-  virtual bool PostRasterThreadTask(fml::closure callback);
+  virtual bool PostRasterThreadTask(fml::closure callback) const;
 
   // Invoke on the embedder's vsync callback to schedule a frame.
   void OnVsync(intptr_t baton);
@@ -360,13 +369,14 @@ class FlutterWindowsEngine {
   // The texture registrar.
   std::unique_ptr<FlutterWindowsTextureRegistrar> texture_registrar_;
 
-  // Resolved OpenGL functions used by external texture implementations.
-  GlProcs gl_procs_ = {};
+  // An object used for intializing ANGLE and creating / destroying render
+  // surfaces. If nullptr, ANGLE failed to initialize and software rendering
+  // should be used instead.
+  std::unique_ptr<egl::Manager> egl_manager_;
 
-  // An object used for intializing Angle and creating / destroying render
-  // surfaces. Surface creation functionality requires a valid render_target.
-  // May be nullptr if ANGLE failed to initialize.
-  std::unique_ptr<AngleSurfaceManager> surface_manager_;
+  // The compositor that creates backing stores for the engine to render into
+  // and then presents them onto views.
+  std::unique_ptr<Compositor> compositor_;
 
   // The plugin registrar managing internal plugins.
   std::unique_ptr<PluginRegistrar> internal_plugin_registrar_;
@@ -421,6 +431,8 @@ class FlutterWindowsEngine {
   std::unique_ptr<WindowsLifecycleManager> lifecycle_manager_;
 
   std::shared_ptr<WindowsProcTable> windows_proc_table_;
+
+  std::shared_ptr<egl::ProcTable> gl_;
 
   FML_DISALLOW_COPY_AND_ASSIGN(FlutterWindowsEngine);
 };

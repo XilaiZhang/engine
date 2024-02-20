@@ -9,6 +9,7 @@
 #include "impeller/base/validation.h"
 #include "impeller/core/formats.h"
 #include "impeller/renderer/backend/vulkan/vk.h"
+#include "vulkan/vulkan_core.h"
 
 namespace impeller {
 
@@ -253,7 +254,6 @@ static bool PhysicalDeviceSupportsRequiredFormats(
   const auto has_color_format =
       HasSuitableColorFormat(device, vk::Format::eB8G8R8A8Unorm);
   const auto has_stencil_format =
-      HasSuitableDepthStencilFormat(device, vk::Format::eS8Uint) ||
       HasSuitableDepthStencilFormat(device, vk::Format::eD32SfloatS8Uint) ||
       HasSuitableDepthStencilFormat(device, vk::Format::eD24UnormS8Uint);
   return has_color_format && has_stencil_format;
@@ -350,10 +350,8 @@ bool CapabilitiesVK::SetPhysicalDevice(const vk::PhysicalDevice& device) {
 
   if (HasSuitableDepthStencilFormat(device, vk::Format::eS8Uint)) {
     default_stencil_format_ = PixelFormat::kS8UInt;
-  } else if (default_stencil_format_ != PixelFormat::kUnknown) {
+  } else if (default_depth_stencil_format_ != PixelFormat::kUnknown) {
     default_stencil_format_ = default_depth_stencil_format_;
-  } else {
-    return false;
   }
 
   device_properties_ = device.getProperties();
@@ -431,7 +429,7 @@ bool CapabilitiesVK::SupportsTextureToTextureBlits() const {
 
 // |Capabilities|
 bool CapabilitiesVK::SupportsFramebufferFetch() const {
-  return false;
+  return true;
 }
 
 // |Capabilities|
@@ -484,6 +482,10 @@ bool CapabilitiesVK::HasOptionalDeviceExtension(
     OptionalDeviceExtensionVK extension) const {
   return optional_device_extensions_.find(extension) !=
          optional_device_extensions_.end();
+}
+
+PixelFormat CapabilitiesVK::GetDefaultGlyphAtlasFormat() const {
+  return PixelFormat::kR8UNormInt;
 }
 
 }  // namespace impeller

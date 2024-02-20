@@ -24,7 +24,16 @@ class BufferView {
 }
 
 /// A buffer that can be referenced by commands on the GPU.
-mixin Buffer {}
+mixin Buffer {
+  void _bindAsVertexBuffer(RenderPass renderPass, int offsetInBytes,
+      int lengthInBytes, int vertexCount);
+
+  void _bindAsIndexBuffer(RenderPass renderPass, int offsetInBytes,
+      int lengthInBytes, IndexType indexType, int indexCount);
+
+  bool _bindAsUniform(RenderPass renderPass, UniformSlot slot,
+      int offsetInBytes, int lengthInBytes);
+}
 
 /// [DeviceBuffer] is a region of memory allocated on the device heap
 /// (GPU-resident memory).
@@ -51,6 +60,27 @@ base class DeviceBuffer extends NativeFieldWrapperClass1 with Buffer {
 
   final StorageMode storageMode;
   final int sizeInBytes;
+
+  @override
+  void _bindAsVertexBuffer(RenderPass renderPass, int offsetInBytes,
+      int lengthInBytes, int vertexCount) {
+    renderPass._bindVertexBufferDevice(
+        this, offsetInBytes, lengthInBytes, vertexCount);
+  }
+
+  @override
+  void _bindAsIndexBuffer(RenderPass renderPass, int offsetInBytes,
+      int lengthInBytes, IndexType indexType, int indexCount) {
+    renderPass._bindIndexBufferDevice(
+        this, offsetInBytes, lengthInBytes, indexType.index, indexCount);
+  }
+
+  @override
+  bool _bindAsUniform(RenderPass renderPass, UniformSlot slot,
+      int offsetInBytes, int lengthInBytes) {
+    return renderPass._bindUniformDevice(
+        slot.shader, slot.uniformName, this, offsetInBytes, lengthInBytes);
+  }
 
   /// Wrap with native counterpart.
   @Native<Bool Function(Handle, Pointer<Void>, Int, Int)>(
@@ -105,14 +135,35 @@ base class DeviceBuffer extends NativeFieldWrapperClass1 with Buffer {
 /// and automatically inserts padding between emplaced data if necessary.
 base class HostBuffer extends NativeFieldWrapperClass1 with Buffer {
   /// Creates a new HostBuffer.
-  HostBuffer() {
-    _initialize();
+  HostBuffer._initialize(GpuContext gpuContext) {
+    _initialize(gpuContext);
+  }
+
+  @override
+  void _bindAsVertexBuffer(RenderPass renderPass, int offsetInBytes,
+      int lengthInBytes, int vertexCount) {
+    renderPass._bindVertexBufferHost(
+        this, offsetInBytes, lengthInBytes, vertexCount);
+  }
+
+  @override
+  void _bindAsIndexBuffer(RenderPass renderPass, int offsetInBytes,
+      int lengthInBytes, IndexType indexType, int indexCount) {
+    renderPass._bindIndexBufferHost(
+        this, offsetInBytes, lengthInBytes, indexType.index, indexCount);
+  }
+
+  @override
+  bool _bindAsUniform(RenderPass renderPass, UniformSlot slot,
+      int offsetInBytes, int lengthInBytes) {
+    return renderPass._bindUniformHost(
+        slot.shader, slot.uniformName, this, offsetInBytes, lengthInBytes);
   }
 
   /// Wrap with native counterpart.
-  @Native<Void Function(Handle)>(
+  @Native<Void Function(Handle, Pointer<Void>)>(
       symbol: 'InternalFlutterGpu_HostBuffer_Initialize')
-  external void _initialize();
+  external void _initialize(GpuContext gpuContext);
 
   /// Append byte data to the end of the [HostBuffer] and produce a [BufferView]
   /// that references the new data in the buffer.

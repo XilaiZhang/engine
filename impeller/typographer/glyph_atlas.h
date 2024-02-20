@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#pragma once
+#ifndef FLUTTER_IMPELLER_TYPOGRAPHER_GLYPH_ATLAS_H_
+#define FLUTTER_IMPELLER_TYPOGRAPHER_GLYPH_ATLAS_H_
 
 #include <functional>
 #include <memory>
 #include <optional>
 #include <unordered_map>
 
-#include "flutter/fml/macros.h"
 #include "impeller/core/texture.h"
 #include "impeller/geometry/rect.h"
 #include "impeller/renderer/pipeline.h"
@@ -32,8 +32,10 @@ class GlyphAtlas {
   enum class Type {
     //--------------------------------------------------------------------------
     /// The glyphs are reprsented at their requested size using only an 8-bit
-    /// alpha channel.
+    /// color channel.
     ///
+    /// This might be backed by a grey or red single channel texture, depending
+    /// on the backend capabilities.
     kAlphaBitmap,
 
     //--------------------------------------------------------------------------
@@ -204,3 +206,5 @@ class FontGlyphAtlas {
 };
 
 }  // namespace impeller
+
+#endif  // FLUTTER_IMPELLER_TYPOGRAPHER_GLYPH_ATLAS_H_

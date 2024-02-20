@@ -128,7 +128,6 @@ source_set("ui") {
     "text/paragraph.h",
     "text/paragraph_builder.cc",
     "text/paragraph_builder.h",
-    "text/text_box.h",
     "ui_dart_state.cc",
     "ui_dart_state.h",
     "volatile_path_tracker.cc",
@@ -168,6 +167,7 @@ source_set("ui") {
   ]
 
   deps = [
+    "$dart_src/runtime/bin:dart_io_api",
     "//flutter/assets",
     "//flutter/common",
     "//flutter/common/graphics",
@@ -179,7 +179,6 @@ source_set("ui") {
     "//flutter/skia",
     "//flutter/third_party/rapidjson",
     "//flutter/third_party/tonic",
-    "//third_party/dart/runtime/bin:dart_io_api",
     "//third_party/zlib:zlib",
   ]
 
@@ -283,6 +282,7 @@ if (enable_unittests) {
     deps = [
       ":ui",
       ":ui_unittests_fixtures",
+      "$dart_src/runtime/bin:elf_loader",
       "//flutter/common",
       "//flutter/impeller",
       "//flutter/lib/snapshot",
@@ -291,7 +291,6 @@ if (enable_unittests) {
       "//flutter/testing:dart",
       "//flutter/testing:fixture_test",
       "//flutter/third_party/tonic",
-      "//third_party/dart/runtime/bin:elf_loader",
     ]
 
     # TODO(https://github.com/flutter/flutter/issues/63837): This test is hard-coded to use a TestGLSurface so it cannot run on fuchsia.

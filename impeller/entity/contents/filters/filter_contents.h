@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#pragma once
+#ifndef FLUTTER_IMPELLER_ENTITY_CONTENTS_FILTERS_FILTER_CONTENTS_H_
+#define FLUTTER_IMPELLER_ENTITY_CONTENTS_FILTERS_FILTER_CONTENTS_H_
 
 #include <memory>
 #include <optional>
@@ -12,12 +13,15 @@
 #include "impeller/core/formats.h"
 #include "impeller/entity/contents/filters/inputs/filter_input.h"
 #include "impeller/entity/entity.h"
+#include "impeller/geometry/matrix.h"
 #include "impeller/geometry/sigma.h"
 
 namespace impeller {
 
 class FilterContents : public Contents {
  public:
+  static const int32_t kBlurFilterRequiredMipCount;
+
   enum class BlurStyle {
     /// Blurred inside and outside.
     kNormal,
@@ -30,17 +34,6 @@ class FilterContents : public Contents {
   };
 
   enum class MorphType { kDilate, kErode };
-
-  /// Creates a gaussian blur that operates in one direction.
-  /// See also: `MakeGaussianBlur`
-  static std::shared_ptr<FilterContents> MakeDirectionalGaussianBlur(
-      FilterInput::Ref input,
-      Sigma sigma,
-      Vector2 direction,
-      BlurStyle blur_style = BlurStyle::kNormal,
-      Entity::TileMode tile_mode = Entity::TileMode::kDecal,
-      bool is_second_pass = false,
-      Sigma secondary_sigma = {});
 
   /// Creates a gaussian blur that operates in 2 dimensions.
   /// See also: `MakeDirectionalGaussianBlur`
@@ -127,6 +120,7 @@ class FilterContents : public Contents {
       std::optional<Rect> coverage_limit = std::nullopt,
       const std::optional<SamplerDescriptor>& sampler_descriptor = std::nullopt,
       bool msaa_enabled = true,
+      int32_t mip_count = 1,
       const std::string& label = "Filter Snapshot") const override;
 
   // |Contents|
@@ -170,8 +164,8 @@ class FilterContents : public Contents {
   Matrix GetTransform(const Matrix& parent_transform) const;
 
   /// @brief  Returns true if this filter graph doesn't perform any basis
-  ///         transformations to the filtered content. For example: Rotating,
-  ///         scaling, and skewing are all basis transformations, but
+  ///         transforms to the filtered content. For example: Rotating,
+  ///         scaling, and skewing are all basis transforms, but
   ///         translating is not.
   ///
   ///         This is useful for determining whether a filtered object's space
@@ -191,8 +185,8 @@ class FilterContents : public Contents {
   /// @brief  Marks this filter chain as applying in a subpass scenario.
   ///
   ///         Subpasses render in screenspace, and this setting informs filters
-  ///         that the current transformation matrix of the entity is not stored
-  ///         in the Entity transformation matrix. Instead, the effect transform
+  ///         that the current transform matrix of the entity is not stored
+  ///         in the Entity transform matrix. Instead, the effect transform
   ///         is used in this case.
   virtual void SetRenderingMode(Entity::RenderingMode rendering_mode);
 
@@ -230,7 +224,7 @@ class FilterContents : public Contents {
   std::optional<Rect> GetLocalCoverage(const Entity& local_entity) const;
 
   FilterInput::Vector inputs_;
-  Matrix effect_transform_;
+  Matrix effect_transform_ = Matrix();
 
   FilterContents(const FilterContents&) = delete;
 
@@ -238,3 +232,5 @@ class FilterContents : public Contents {
 };
 
 }  // namespace impeller
+
+#endif  // FLUTTER_IMPELLER_ENTITY_CONTENTS_FILTERS_FILTER_CONTENTS_H_

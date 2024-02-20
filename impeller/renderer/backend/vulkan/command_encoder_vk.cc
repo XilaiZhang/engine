@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "impeller/renderer/backend/vulkan/command_encoder_vk.h"
+#include <string>
 
 #include "flutter/fml/closure.h"
 #include "fml/status.h"
@@ -11,93 +12,9 @@
 #include "impeller/renderer/backend/vulkan/fence_waiter_vk.h"
 #include "impeller/renderer/backend/vulkan/gpu_tracer_vk.h"
 #include "impeller/renderer/backend/vulkan/texture_vk.h"
+#include "impeller/renderer/backend/vulkan/tracked_objects_vk.h"
 
 namespace impeller {
-
-class TrackedObjectsVK {
- public:
-  explicit TrackedObjectsVK(
-      const std::weak_ptr<const DeviceHolder>& device_holder,
-      const std::shared_ptr<CommandPoolVK>& pool,
-      std::unique_ptr<GPUProbe> probe)
-      : desc_pool_(device_holder), probe_(std::move(probe)) {
-    if (!pool) {
-      return;
-    }
-    auto buffer = pool->CreateCommandBuffer();
-    if (!buffer) {
-      return;
-    }
-    pool_ = pool;
-    buffer_ = std::move(buffer);
-    is_valid_ = true;
-  }
-
-  ~TrackedObjectsVK() {
-    if (!buffer_) {
-      return;
-    }
-    pool_->CollectCommandBuffer(std::move(buffer_));
-  }
-
-  bool IsValid() const { return is_valid_; }
-
-  void Track(std::shared_ptr<SharedObjectVK> object) {
-    if (!object) {
-      return;
-    }
-    tracked_objects_.insert(std::move(object));
-  }
-
-  void Track(std::shared_ptr<const Buffer> buffer) {
-    if (!buffer) {
-      return;
-    }
-    tracked_buffers_.insert(std::move(buffer));
-  }
-
-  bool IsTracking(const std::shared_ptr<const Buffer>& buffer) const {
-    if (!buffer) {
-      return false;
-    }
-    return tracked_buffers_.find(buffer) != tracked_buffers_.end();
-  }
-
-  void Track(std::shared_ptr<const TextureSourceVK> texture) {
-    if (!texture) {
-      return;
-    }
-    tracked_textures_.insert(std::move(texture));
-  }
-
-  bool IsTracking(const std::shared_ptr<const TextureSourceVK>& texture) const {
-    if (!texture) {
-      return false;
-    }
-    return tracked_textures_.find(texture) != tracked_textures_.end();
-  }
-
-  vk::CommandBuffer GetCommandBuffer() const { return *buffer_; }
-
-  DescriptorPoolVK& GetDescriptorPool() { return desc_pool_; }
-
-  GPUProbe& GetGPUProbe() const { return *probe_.get(); }
-
- private:
-  DescriptorPoolVK desc_pool_;
-  // `shared_ptr` since command buffers have a link to the command pool.
-  std::shared_ptr<CommandPoolVK> pool_;
-  vk::UniqueCommandBuffer buffer_;
-  std::set<std::shared_ptr<SharedObjectVK>> tracked_objects_;
-  std::set<std::shared_ptr<const Buffer>> tracked_buffers_;
-  std::set<std::shared_ptr<const TextureSourceVK>> tracked_textures_;
-  std::unique_ptr<GPUProbe> probe_;
-  bool is_valid_ = false;
-
-  TrackedObjectsVK(const TrackedObjectsVK&) = delete;
-
-  TrackedObjectsVK& operator=(const TrackedObjectsVK&) = delete;
-};
 
 CommandEncoderFactoryVK::CommandEncoderFactoryVK(
     const std::weak_ptr<const ContextVK>& context)
@@ -112,8 +29,7 @@ std::shared_ptr<CommandEncoderVK> CommandEncoderFactoryVK::Create() {
   if (!context) {
     return nullptr;
   }
-  auto& context_vk = ContextVK::Cast(*context);
-  auto recycler = context_vk.GetCommandPoolRecycler();
+  auto recycler = context->GetCommandPoolRecycler();
   if (!recycler) {
     return nullptr;
   }
@@ -123,9 +39,8 @@ std::shared_ptr<CommandEncoderVK> CommandEncoderFactoryVK::Create() {
   }
 
   auto tracked_objects = std::make_shared<TrackedObjectsVK>(
-      context_vk.GetDeviceHolder(), tls_pool,
-      context->GetGPUTracer()->CreateGPUProbe());
-  auto queue = context_vk.GetGraphicsQueue();
+      context, tls_pool, context->GetGPUTracer()->CreateGPUProbe());
+  auto queue = context->GetGraphicsQueue();
 
   if (!tracked_objects || !tracked_objects->IsValid() || !queue) {
     return nullptr;
@@ -140,15 +55,14 @@ std::shared_ptr<CommandEncoderVK> CommandEncoderFactoryVK::Create() {
   }
 
   if (label_.has_value()) {
-    context_vk.SetDebugName(tracked_objects->GetCommandBuffer(),
-                            label_.value());
+    context->SetDebugName(tracked_objects->GetCommandBuffer(), label_.value());
   }
   tracked_objects->GetGPUProbe().RecordCmdBufferStart(
       tracked_objects->GetCommandBuffer());
 
-  return std::make_shared<CommandEncoderVK>(context_vk.GetDeviceHolder(),
+  return std::make_shared<CommandEncoderVK>(context->GetDeviceHolder(),
                                             tracked_objects, queue,
-                                            context_vk.GetFenceWaiter());
+                                            context->GetFenceWaiter());
 }
 
 CommandEncoderVK::CommandEncoderVK(
@@ -167,29 +81,10 @@ bool CommandEncoderVK::IsValid() const {
   return is_valid_;
 }
 
-bool CommandEncoderVK::Submit(SubmitCallback callback) {
-  // Make sure to call callback with `false` if anything returns early.
-  bool fail_callback = !!callback;
-  if (!IsValid()) {
-    VALIDATION_LOG << "Cannot submit invalid CommandEncoderVK.";
-    if (fail_callback) {
-      callback(false);
-    }
-    return false;
-  }
-
-  // Success or failure, you only get to submit once.
-  fml::ScopedCleanupClosure reset([&]() {
-    if (fail_callback) {
-      callback(false);
-    }
-    Reset();
-  });
-
+bool CommandEncoderVK::EndCommandBuffer() const {
   InsertDebugMarker("QueueSubmit");
 
   auto command_buffer = GetCommandBuffer();
-
   tracked_objects_->GetGPUProbe().RecordCmdBufferEnd(command_buffer);
 
   auto status = command_buffer.end();
@@ -197,39 +92,7 @@ bool CommandEncoderVK::Submit(SubmitCallback callback) {
     VALIDATION_LOG << "Failed to end command buffer: " << vk::to_string(status);
     return false;
   }
-  std::shared_ptr<const DeviceHolder> strong_device = device_holder_.lock();
-  if (!strong_device) {
-    VALIDATION_LOG << "Device lost.";
-    return false;
-  }
-  auto [fence_result, fence] = strong_device->GetDevice().createFenceUnique({});
-  if (fence_result != vk::Result::eSuccess) {
-    VALIDATION_LOG << "Failed to create fence: " << vk::to_string(fence_result);
-    return false;
-  }
-
-  vk::SubmitInfo submit_info;
-  std::vector<vk::CommandBuffer> buffers = {command_buffer};
-  submit_info.setCommandBuffers(buffers);
-  status = queue_->Submit(submit_info, *fence);
-  if (status != vk::Result::eSuccess) {
-    VALIDATION_LOG << "Failed to submit queue: " << vk::to_string(status);
-    return false;
-  }
-
-  // Submit will proceed, call callback with true when it is done and do not
-  // call when `reset` is collected.
-  fail_callback = false;
-  return fence_waiter_->AddFence(
-      std::move(fence),
-      [callback, tracked_objects = std::move(tracked_objects_)]() mutable {
-        // Ensure tracked objects are destructed before calling any final
-        // callbacks.
-        tracked_objects.reset();
-        if (callback) {
-          callback(true);
-        }
-      });
+  return true;
 }
 
 vk::CommandBuffer CommandEncoderVK::GetCommandBuffer() const {
@@ -254,7 +117,7 @@ bool CommandEncoderVK::Track(std::shared_ptr<SharedObjectVK> object) {
   return true;
 }
 
-bool CommandEncoderVK::Track(std::shared_ptr<const Buffer> buffer) {
+bool CommandEncoderVK::Track(std::shared_ptr<const DeviceBuffer> buffer) {
   if (!IsValid()) {
     return false;
   }
@@ -263,7 +126,7 @@ bool CommandEncoderVK::Track(std::shared_ptr<const Buffer> buffer) {
 }
 
 bool CommandEncoderVK::IsTracking(
-    const std::shared_ptr<const Buffer>& buffer) const {
+    const std::shared_ptr<const DeviceBuffer>& buffer) const {
   if (!IsValid()) {
     return false;
   }
@@ -298,25 +161,23 @@ bool CommandEncoderVK::IsTracking(
   return tracked_objects_->IsTracking(source);
 }
 
-fml::StatusOr<std::vector<vk::DescriptorSet>>
-CommandEncoderVK::AllocateDescriptorSets(
-    uint32_t buffer_count,
-    uint32_t sampler_count,
-    const std::vector<vk::DescriptorSetLayout>& layouts) {
+fml::StatusOr<vk::DescriptorSet> CommandEncoderVK::AllocateDescriptorSets(
+    const vk::DescriptorSetLayout& layout,
+    const ContextVK& context) {
   if (!IsValid()) {
     return fml::Status(fml::StatusCode::kUnknown, "command encoder invalid");
   }
 
-  return tracked_objects_->GetDescriptorPool().AllocateDescriptorSets(
-      buffer_count, sampler_count, layouts);
+  return tracked_objects_->GetDescriptorPool().AllocateDescriptorSets(layout,
+                                                                      context);
 }
 
-void CommandEncoderVK::PushDebugGroup(const char* label) const {
+void CommandEncoderVK::PushDebugGroup(std::string_view label) const {
   if (!HasValidationLayers()) {
     return;
   }
   vk::DebugUtilsLabelEXT label_info;
-  label_info.pLabelName = label;
+  label_info.pLabelName = label.data();
   if (auto command_buffer = GetCommandBuffer()) {
     command_buffer.beginDebugUtilsLabelEXT(label_info);
   }
@@ -331,12 +192,12 @@ void CommandEncoderVK::PopDebugGroup() const {
   }
 }
 
-void CommandEncoderVK::InsertDebugMarker(const char* label) const {
+void CommandEncoderVK::InsertDebugMarker(std::string_view label) const {
   if (!HasValidationLayers()) {
     return;
   }
   vk::DebugUtilsLabelEXT label_info;
-  label_info.pLabelName = label;
+  label_info.pLabelName = label.data();
   if (auto command_buffer = GetCommandBuffer()) {
     command_buffer.insertDebugUtilsLabelEXT(label_info);
   }

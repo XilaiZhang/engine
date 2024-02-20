@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#pragma once
+#ifndef FLUTTER_IMPELLER_COMPILER_SPIRV_COMPILER_H_
+#define FLUTTER_IMPELLER_COMPILER_SPIRV_COMPILER_H_
 
 #include <cstdint>
 #include <vector>
 
-#include "flutter/fml/macros.h"
 #include "flutter/fml/mapping.h"
 #include "impeller/compiler/includer.h"
 #include "impeller/compiler/source_options.h"
@@ -49,6 +49,8 @@ struct SPIRVCompilerOptions {
 
   std::shared_ptr<Includer> includer;
 
+  bool relaxed_vulkan_rules = false;
+
   shaderc::CompileOptions BuildShadercOptions() const;
 };
 
@@ -76,3 +78,5 @@ class SPIRVCompiler {
 
 }  // namespace compiler
 }  // namespace impeller
+
+#endif  // FLUTTER_IMPELLER_COMPILER_SPIRV_COMPILER_H_

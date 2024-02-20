@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FLUTTER_FLOW_INSTRUMENTATION_H_
-#define FLUTTER_FLOW_INSTRUMENTATION_H_
+#ifndef FLUTTER_FLOW_STOPWATCH_H_
+#define FLUTTER_FLOW_STOPWATCH_H_
 
 #include <vector>
 
@@ -56,7 +56,7 @@ class Stopwatch {
   const RefreshRateUpdater& refresh_rate_updater_;
   fml::TimePoint start_;
   std::vector<fml::TimeDelta> laps_;
-  size_t current_sample_;
+  size_t current_sample_ = 0;
 
   FML_DISALLOW_COPY_AND_ASSIGN(Stopwatch);
 };
@@ -125,4 +125,4 @@ class StopwatchVisualizer {
 
 }  // namespace flutter
 
-#endif  // FLUTTER_FLOW_INSTRUMENTATION_H_
+#endif  // FLUTTER_FLOW_STOPWATCH_H_

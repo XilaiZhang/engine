@@ -148,7 +148,7 @@ class KeyboardBinding {
       if (_debugLogKeyEvents) {
         print(event.type);
       }
-      if (EngineSemanticsOwner.instance.receiveGlobalEvent(event)) {
+      if (EngineSemantics.instance.receiveGlobalEvent(event)) {
         handler(event);
       }
     }
@@ -258,6 +258,7 @@ class KeyboardConverter {
   bool _disposed = false;
   void dispose() {
     _disposed = true;
+    clearPressedKeys();
   }
 
   // On macOS, CapsLock behaves differently in that, a keydown event occurs when
@@ -471,7 +472,7 @@ class KeyboardConverter {
             timeStamp: timeStamp,
             type: ui.KeyEventType.up,
             physical: physicalKey,
-            logical: logicalKey(),
+            logical: _pressingRecords[physicalKey]!,
             character: null,
             synthesized: true,
           ));
@@ -585,6 +586,11 @@ class KeyboardConverter {
   //  * Some key data might be synthesized to update states after the main key
   //    data. They are always scheduled asynchronously with results discarded.
   void handleEvent(FlutterHtmlKeyboardEvent event) {
+    // Autofill on Chrome sends keyboard events whose key and code are null.
+    if (event.key == null || event.code == null) {
+      return;
+    }
+
     assert(_dispatchKeyData == null);
     bool sentAnyEvents = false;
     _dispatchKeyData = (ui.KeyData data) {
@@ -698,5 +704,9 @@ class KeyboardConverter {
 
   bool keyIsPressed(int physical) {
     return _pressingRecords.containsKey(physical);
+  }
+
+  void clearPressedKeys() {
+    _pressingRecords.clear();
   }
 }

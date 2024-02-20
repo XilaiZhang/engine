@@ -4,6 +4,7 @@
 
 #include "flutter/shell/platform/android/platform_view_android.h"
 
+#include <android/api-level.h>
 #include <memory>
 #include <utility>
 
@@ -32,6 +33,8 @@
 #include "flutter/shell/platform/android/vsync_waiter_android.h"
 
 namespace flutter {
+
+constexpr int kMinimumAndroidApiLevelForVulkan = 29;
 
 AndroidSurfaceFactoryImpl::AndroidSurfaceFactoryImpl(
     const std::shared_ptr<AndroidContext>& context,
@@ -71,11 +74,33 @@ static std::shared_ptr<flutter::AndroidContext> CreateAndroidContext(
     bool enable_impeller,
     const std::optional<std::string>& impeller_backend,
     bool enable_vulkan_validation,
-    bool enable_opengl_gpu_tracing) {
+    bool enable_opengl_gpu_tracing,
+    bool enable_vulkan_gpu_tracing) {
   if (use_software_rendering) {
+    FML_DCHECK(!enable_impeller);
     return std::make_shared<AndroidContext>(AndroidRenderingAPI::kSoftware);
   }
   if (enable_impeller) {
+    // Vulkan must only be used on API level 29+, as older API levels do not
+    // have requisite features to support platform views.
+    //
+    // Even if this check returns true, Impeller may determine it cannot use
+    // Vulkan for some other reason, such as a missing required extension or
+    // feature.
+    int api_level = android_get_device_api_level();
+    if (api_level < kMinimumAndroidApiLevelForVulkan) {
+      if (impeller_backend.value_or("") == "vulkan") {
+        FML_LOG(WARNING)
+            << "Impeller Vulkan requested, but detected Android API level "
+            << api_level
+            << " does not support required features for Vulkan with platform "
+               "views. Falling back to OpenGLES.";
+      }
+      return std::make_unique<AndroidContextGLImpeller>(
+          std::make_unique<impeller::egl::Display>(),
+          enable_opengl_gpu_tracing);
+    }
+
     // Default value is Vulkan with GLES fallback.
     AndroidRenderingAPI backend = AndroidRenderingAPI::kAutoselect;
     if (impeller_backend.has_value()) {
@@ -95,10 +120,10 @@ static std::shared_ptr<flutter::AndroidContext> CreateAndroidContext(
             enable_opengl_gpu_tracing);
       case AndroidRenderingAPI::kVulkan:
         return std::make_unique<AndroidContextVulkanImpeller>(
-            enable_vulkan_validation);
+            enable_vulkan_validation, enable_vulkan_gpu_tracing);
       case AndroidRenderingAPI::kAutoselect: {
         auto vulkan_backend = std::make_unique<AndroidContextVulkanImpeller>(
-            enable_vulkan_validation);
+            enable_vulkan_validation, enable_vulkan_gpu_tracing);
         if (!vulkan_backend->IsValid()) {
           return std::make_unique<AndroidContextGLImpeller>(
               std::make_unique<impeller::egl::Display>(),
@@ -135,7 +160,8 @@ PlatformViewAndroid::PlatformViewAndroid(
               delegate.OnPlatformViewGetSettings().enable_impeller,
               delegate.OnPlatformViewGetSettings().impeller_backend,
               delegate.OnPlatformViewGetSettings().enable_vulkan_validation,
-              delegate.OnPlatformViewGetSettings().enable_opengl_gpu_tracing)) {
+              delegate.OnPlatformViewGetSettings().enable_opengl_gpu_tracing,
+              delegate.OnPlatformViewGetSettings().enable_vulkan_gpu_tracing)) {
 }
 
 PlatformViewAndroid::PlatformViewAndroid(
